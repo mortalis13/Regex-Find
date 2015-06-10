@@ -22,157 +22,158 @@
     </resources>
 
     <content hidden="true">
-		<xul:hbox anonid="findbar-container" class="findbar-container" flex="1" align="center">
-		  <xul:hbox anonid="findbar-textbox-wrapper" align="stretch">
-			<xul:textbox anonid="findbar-textbox"
-						 class="findbar-textbox findbar-find-fast"
-						 xbl:inherits="flash"/>
-			<xul:toolbarbutton anonid="find-previous"
-							   class="findbar-find-previous tabbable"
-							   tooltiptext="&previous.tooltip;"
-							   oncommand="onFindAgainCommand(true);"
-							   disabled="true"
-							   xbl:inherits="accesskey=findpreviousaccesskey"/>
-			<xul:toolbarbutton anonid="find-next"
-							   class="findbar-find-next tabbable"
-							   tooltiptext="&next.tooltip;"
-							   oncommand="onFindAgainCommand(false);"
-							   disabled="true"
-							   xbl:inherits="accesskey=findnextaccesskey"/>
-		  </xul:hbox>
-		  <xul:toolbarbutton anonid="highlight"
-							 class="findbar-highlight tabbable"
-							 label="&highlightAll.label;"
-							 accesskey="&highlightAll.accesskey;"
-							 tooltiptext="&highlightAll.tooltiptext;"
-							 oncommand="toggleHighlight(this.checked);"
-							 type="checkbox"
-							 xbl:inherits="accesskey=highlightaccesskey"/>
-		  <xul:toolbarbutton anonid="find-case-sensitive"
-							 class="findbar-case-sensitive tabbable"
-							 label="&caseSensitive.label;"
-							 accesskey="&caseSensitive.accesskey;"
-							 tooltiptext="&caseSensitive.tooltiptext;"
-							 oncommand="_setCaseSensitivity(this.checked);"
-							 type="checkbox"
-							 xbl:inherits="accesskey=matchcaseaccesskey"/>
-		 
-		  <xul:toolbarbutton anonid="find-regex"
-							 label="&regexCheckbox.label;"
-							 accesskey="&regexCheckbox.accesskey;"
-							 type="checkbox"
-							 oncommand="_setRegexFind(this.checked)"/>
-		 
-		  <xul:label anonid="match-case-status" class="findbar-find-fast"/>
-		  <xul:label anonid="found-matches" class="findbar-find-fast found-matches" hidden="true"/>
-		  <xul:image anonid="find-status-icon" class="findbar-find-fast find-status-icon"/>
-		  <xul:description anonid="find-status"
-						   control="findbar-textbox"
-						   class="findbar-find-fast findbar-find-status">
-		  <!-- Do not use value, first child is used because it provides a11y with text change events -->
-		  </xul:description>
-		</xul:hbox>
-		<xul:toolbarbutton anonid="find-closebutton"
-						   class="findbar-closebutton close-icon"
-						   tooltiptext="&findCloseButton.tooltip;"
-						   oncommand="close();"/>
+    <xul:hbox anonid="findbar-container" class="findbar-container" flex="1" align="center">
+      <xul:hbox anonid="findbar-textbox-wrapper" align="stretch">
+      <xul:textbox anonid="findbar-textbox"
+             class="findbar-textbox findbar-find-fast"
+             xbl:inherits="flash"/>
+      <xul:toolbarbutton anonid="find-previous"
+                 class="findbar-find-previous tabbable"
+                 tooltiptext="&previous.tooltip;"
+                 oncommand="onFindAgainCommand(true);"
+                 disabled="true"
+                 xbl:inherits="accesskey=findpreviousaccesskey"/>
+      <xul:toolbarbutton anonid="find-next"
+                 class="findbar-find-next tabbable"
+                 tooltiptext="&next.tooltip;"
+                 oncommand="onFindAgainCommand(false);"
+                 disabled="true"
+                 xbl:inherits="accesskey=findnextaccesskey"/>
+      </xul:hbox>
+      <xul:toolbarbutton anonid="highlight"
+               class="findbar-highlight tabbable"
+               label="&highlightAll.label;"
+               accesskey="&highlightAll.accesskey;"
+               tooltiptext="&highlightAll.tooltiptext;"
+               oncommand="toggleHighlight(this.checked);"
+               type="checkbox"
+               xbl:inherits="accesskey=highlightaccesskey"/>
+      <xul:toolbarbutton anonid="find-case-sensitive"
+               class="findbar-case-sensitive tabbable"
+               label="&caseSensitive.label;"
+               accesskey="&caseSensitive.accesskey;"
+               tooltiptext="&caseSensitive.tooltiptext;"
+               oncommand="_setCaseSensitivity(this.checked);"
+               type="checkbox"
+               xbl:inherits="accesskey=matchcaseaccesskey"/>
+     
+      <xul:toolbarbutton anonid="find-regex"
+               class="findbar-regex tabbable"
+               label="&regexCheckbox.label;"
+               accesskey="&regexCheckbox.accesskey;"
+               type="checkbox"
+               oncommand="_setRegexFind(this.checked)"/>
+     
+      <xul:label anonid="match-case-status" class="findbar-find-fast"/>
+      <xul:label anonid="found-matches" class="findbar-find-fast found-matches" hidden="true"/>
+      <xul:image anonid="find-status-icon" class="findbar-find-fast find-status-icon"/>
+      <xul:description anonid="find-status"
+               control="findbar-textbox"
+               class="findbar-find-fast findbar-find-status">
+      <!-- Do not use value, first child is used because it provides a11y with text change events -->
+      </xul:description>
+    </xul:hbox>
+    <xul:toolbarbutton anonid="find-closebutton"
+               class="findbar-closebutton close-icon"
+               tooltiptext="&findCloseButton.tooltip;"
+               oncommand="close();"/>
     </content>
 
-	<implementation implements="nsIDOMEventListener, nsIEditActionListener">
-	  <field name="regexSearch">false</field>
-	  <field name="prevRegexValue">null</field>
-	  <field name="prevLastIndex">0</field>
-	  <field name="regexFindPrevious">false</field>
-	  
-	  <field name="lines">null</field>
-	  <field name="globalResults">null</field>
-	  
-	  <field name="regexHighlight">false</field>
-	  <field name="regexCaseSensitive">false</field>
-	  
-	  <field name="regexEndReached">false</field>
-	  <field name="regexStartReached">false</field>
-	  
-	  <field name="FOUND">0</field>
-	  <field name="NOT_FOUND">1</field>
-	  <field name="EXCEPTION">2</field>
+  <implementation implements="nsIDOMEventListener, nsIEditActionListener">
+    <field name="regexSearch">false</field>
+    <field name="prevRegexValue">null</field>
+    <field name="prevLastIndex">0</field>
+    <field name="regexFindPrevious">false</field>
+    
+    <field name="lines">null</field>
+    <field name="globalResults">null</field>
+    
+    <field name="regexHighlight">false</field>
+    <field name="regexCaseSensitive">false</field>
+    
+    <field name="regexEndReached">false</field>
+    <field name="regexStartReached">false</field>
+    
+    <field name="FOUND">0</field>
+    <field name="NOT_FOUND">1</field>
+    <field name="EXCEPTION">2</field>
 
-	  <method name="_find">
+    <method name="_find">
         <parameter name="aValue"/>
         <body><![CDATA[
-			let val = aValue || this._findField.value;
-			
-			if(this.regexSearch){
-				var window=this.browser.contentWindow,
-				document=window.document,body=document.body
-				
-				if(val){
-					var findAgain=false
-					if(val==this.prevRegexValue) findAgain=true					//if the search field isn't changed find again
-					this.prevRegexValue=val
-				
-					try{
-						if(this.regexHighlight && !findAgain)					//if the highlight all is checked and the search field is changed
-							this.toggleHighlight(true)							//then continue highlighting all
-						else{
-							if(this.regexHighlight){							//if F3/F2 pressed uncheck the highlight all (and search one occurence)
-								resetHighlightAllColor()
-								this.regexHighlight=false
-								this.getElement("highlight").removeAttribute("checked")
-							}
-							
-							var results
-							if(!this.regexFindPrevious){
-								results=findRegex(document,val,findAgain)
-							}
-							else{
-								this.regexFindPrevious=false
-								results=findRegexPrev(document,val)
-							}
-							
-							if(results){
-								setSelection(results,document,false)
-								updateUI(this.FOUND,results.uiData)					//set status and matches count
-								this._enableFindButtons(val)
-							}
-							else{
-								clearSelection(document)
-								updateUI(this.NOT_FOUND,false)
-							}
-						}
-					}
-					catch(e){
-						updateUI(this.EXCEPTION,e)									//should be a regex error (incorrect using of control symbols [*+?^$])
-					}
-				}
-				else clearSelection(document)
-			}                                                         
-			else{																	//default search
-				if (!this._dispatchFindEvent("")) return;
-				this.browser._lastSearchString = val;
+      let val = aValue || this._findField.value;
+      
+      if(this.regexSearch){
+        var window=this.browser.contentWindow,
+        document=window.document,body=document.body
+        
+        if(val){
+          var findAgain=false
+          if(val==this.prevRegexValue) findAgain=true         //if the search field isn't changed find again
+          this.prevRegexValue=val
+        
+          try{
+            if(this.regexHighlight && !findAgain)         //if the highlight all is checked and the search field is changed
+              this.toggleHighlight(true)              //then continue highlighting all
+            else{
+              if(this.regexHighlight){              //if F3/F2 pressed uncheck the highlight all (and search one occurence)
+                resetHighlightAllColor()
+                this.regexHighlight=false
+                this.getElement("highlight").removeAttribute("checked")
+              }
+              
+              var results
+              if(!this.regexFindPrevious){
+                results=findRegex(document,val,findAgain)
+              }
+              else{
+                this.regexFindPrevious=false
+                results=findRegexPrev(document,val)
+              }
+              
+              if(results){
+                setSelection(results,document,false)
+                updateUI(this.FOUND,results.uiData)         //set status and matches count
+                this._enableFindButtons(val)
+              }
+              else{
+                clearSelection(document)
+                updateUI(this.NOT_FOUND,false)
+              }
+            }
+          }
+          catch(e){
+            updateUI(this.EXCEPTION,e)                  //should be a regex error (incorrect using of control symbols [*+?^$])
+          }
+        }
+        else clearSelection(document)
+      }                                                         
+      else{                                 //default search
+        if (!this._dispatchFindEvent("")) return;
+        this.browser._lastSearchString = val;
 
-				if (!this._findFailedString || !val.startsWith(this._findFailedString)){
-					this._enableFindButtons(val);
-					if (this.getElement("highlight").checked)
-						this._setHighlightTimeout();
-					this._updateCaseSensitivity(val);
-					this.browser.finder.fastFind(val, this._findMode == this.FIND_LINKS,this._findMode != this.FIND_NORMAL);
-				}
+        if (!this._findFailedString || !val.startsWith(this._findFailedString)){
+          this._enableFindButtons(val);
+          if (this.getElement("highlight").checked)
+            this._setHighlightTimeout();
+          this._updateCaseSensitivity(val);
+          this.browser.finder.fastFind(val, this._findMode == this.FIND_LINKS,this._findMode != this.FIND_NORMAL);
+        }
 
-				if (this._findMode != this.FIND_NORMAL)
-					this._setFindCloseTimeout();
-				if (this._findResetTimeout != -1)
-					clearTimeout(this._findResetTimeout);
+        if (this._findMode != this.FIND_NORMAL)
+          this._setFindCloseTimeout();
+        if (this._findResetTimeout != -1)
+          clearTimeout(this._findResetTimeout);
 
-				this._findResetTimeout = setTimeout(() => {
-					this._findFailedString = null;
-					this._findResetTimeout = -1;
-				}, 1000);
-			}
+        this._findResetTimeout = setTimeout(() => {
+          this._findFailedString = null;
+          this._findResetTimeout = -1;
+        }, 1000);
+      }
         ]]></body>
-      </method> 	  	  
-	  
-	  <!--
+      </method>         
+    
+    <!--
         - Stub for find-next and find-previous commands
         - @param aFindPrevious
         -        true for find-previous, false otherwise.
@@ -180,29 +181,29 @@
       <method name="onFindAgainCommand">
         <parameter name="aFindPrevious"/>
         <body><![CDATA[
-		  if(this.regexSearch){
-			this.regexFindPrevious=aFindPrevious
-			this._find(this._findField.value)									//redirect to the _find()
-		  }
-		  else{
-			  let findString = this._browser.finder.searchString || this._findField.value;
-			  if (!findString) {
-				this.startFind();
-				return;
-			  }
+      if(this.regexSearch){
+      this.regexFindPrevious=aFindPrevious
+      this._find(this._findField.value)                 //redirect to the _find()
+      }
+      else{
+        let findString = this._browser.finder.searchString || this._findField.value;
+        if (!findString) {
+        this.startFind();
+        return;
+        }
 
-			  if (!this._dispatchFindEvent("again", aFindPrevious)) return;
-			  this._findFailedString = null;
-			  
-			  if (this._findField.value != this._browser.finder.searchString)
-				this._find(this._findField.value);
-			  else
-				this._findAgain(aFindPrevious);
-		  }
+        if (!this._dispatchFindEvent("again", aFindPrevious)) return;
+        this._findFailedString = null;
+        
+        if (this._findField.value != this._browser.finder.searchString)
+        this._find(this._findField.value);
+        else
+        this._findAgain(aFindPrevious);
+      }
         ]]></body>
       </method>
-	  
-	  <!--
+    
+    <!--
         - Turns highlight on or off.
         - @param aHighlight (boolean)
         -        Whether to turn the highlight on or off
@@ -210,49 +211,49 @@
       <method name="toggleHighlight">
         <parameter name="aHighlight"/>
         <body><![CDATA[
-			if(this.regexSearch){
-				var window=this.browser.contentWindow,
-				document=window.document,body=document.body
-				clearSelection(document)
-				
-				this.regexHighlight=aHighlight
-				var val=this._findField.value
-					
-				if(aHighlight && val){
-					var findAgain=false
-					if(val==this.prevRegexValue) findAgain=true
-					
-					var results=findRegexAll(document,val,findAgain)
-					if(results){
-						setHighlightAllColor("#EA60B5")							//uses the 'disabled' text color and changes it via preferences service
-						var foundValues=results.foundValues						//in the about:config (couldn't find a way to change it in another way)
-						for(var r in foundValues)								//add each result to the selection
-							setSelection(foundValues[r],document,true)
-						updateUI(this.FOUND,results.uiData)
-					}
-					else{
-						clearSelection(document)
-						updateUI(this.NOT_FOUND,false)
-					}
-				}
-				else{
-					resetHighlightAllColor()									//default gray 'disabled' text color
-					this._find(this._findField.value)
-				}
-			}
-			else{                                                                   //default highlight
-				if (!this._dispatchFindEvent("highlightallchange")) return;
-				let word = this._findField.value;
-				if (aHighlight && !word) return;
+      if(this.regexSearch){
+        var window=this.browser.contentWindow,
+        document=window.document,body=document.body
+        clearSelection(document)
+        
+        this.regexHighlight=aHighlight
+        var val=this._findField.value
+          
+        if(aHighlight && val){
+          var findAgain=false
+          if(val==this.prevRegexValue) findAgain=true
+          
+          var results=findRegexAll(document,val,findAgain)
+          if(results){
+            setHighlightAllColor("#EA60B5")             //uses the 'disabled' text color and changes it via preferences service
+            var foundValues=results.foundValues           //in the about:config (couldn't find a way to change it in another way)
+            for(var r in foundValues)               //add each result to the selection
+              setSelection(foundValues[r],document,true)
+            updateUI(this.FOUND,results.uiData)
+          }
+          else{
+            clearSelection(document)
+            updateUI(this.NOT_FOUND,false)
+          }
+        }
+        else{
+          resetHighlightAllColor()                  //default gray 'disabled' text color
+          this._find(this._findField.value)
+        }
+      }
+      else{                                                                   //default highlight
+        if (!this._dispatchFindEvent("highlightallchange")) return;
+        let word = this._findField.value;
+        if (aHighlight && !word) return;
 
-				this.browser._lastSearchHighlight = aHighlight;
-				this.browser.finder.highlight(aHighlight, word);
+        this.browser._lastSearchHighlight = aHighlight;
+        this.browser.finder.highlight(aHighlight, word);
 
-				this._updateMatchesCount(this.nsITypeAheadFind.FIND_FOUND);
-			}
+        this._updateMatchesCount(this.nsITypeAheadFind.FIND_FOUND);
+      }
         ]]></body>
       </method>
-	  
+    
       <!--
         - Sets the findbar case-sensitivity mode
         - @param aCaseSensitive (boolean)
@@ -261,35 +262,35 @@
       <method name="_setCaseSensitivity">
         <parameter name="aCaseSensitive"/>
         <body><![CDATA[
-			if(this.regexSearch){
-				this.regexCaseSensitive=aCaseSensitive
-				this.prevRegexValue=null										//prevents the jumping to the next match => findAgain==false
-				this._findField.focus()
-				this._find(this._findField.value)
-			}
-			else{
-				let prefsvc=Components.classes["@mozilla.org/preferences-service;1"]
-							.getService(Components.interfaces.nsIPrefBranch);
-				// Just set the pref; our observer will change the find bar behavior
-				prefsvc.setIntPref("accessibility.typeaheadfind.casesensitive", aCaseSensitive ? 1 : 0);
-				this._dispatchFindEvent("casesensitivitychange");
-			}
+      if(this.regexSearch){
+        this.regexCaseSensitive=aCaseSensitive
+        this.prevRegexValue=null                    //prevents the jumping to the next match => findAgain==false
+        this._findField.focus()
+        this._find(this._findField.value)
+      }
+      else{
+        let prefsvc=Components.classes["@mozilla.org/preferences-service;1"]
+              .getService(Components.interfaces.nsIPrefBranch);
+        // Just set the pref; our observer will change the find bar behavior
+        prefsvc.setIntPref("accessibility.typeaheadfind.casesensitive", aCaseSensitive ? 1 : 0);
+        this._dispatchFindEvent("casesensitivitychange");
+      }
         ]]></body>
-      </method>	  
-	  
-	  <method name="_setRegexFind">
+      </method>   
+    
+    <method name="_setRegexFind">
         <parameter name="aRegex"/>
         <body><![CDATA[
-			this.lines=[]
-			this.globalResults={total:0}
-			
-			this.regexSearch=aRegex
-			if(!aRegex){                                                           // reset the regex searching
-				clearSelection(this.browser.contentWindow.document)
-				this.prevRegexValue=""
-			}
-			this.onFindAgainCommand(false)										//search with the default engine
-		 ]]></body>
+      this.lines=[]
+      this.globalResults={total:0}
+      
+      this.regexSearch=aRegex
+      if(!aRegex){                                                           // reset the regex searching
+        clearSelection(this.browser.contentWindow.document)
+        this.prevRegexValue=""
+      }
+      this.onFindAgainCommand(false)                    //search with the default engine
+     ]]></body>
       </method>
     </implementation>
   </binding>

@@ -6,12 +6,10 @@ findbar {
 .findbar-textbox{
 	width:18em;
 }
-
 .findbar-textbox[status="notfound"] {
   box-shadow: 0 0 0 1em #dfdfdf inset;
   color: black;
 }
-
 .findbar-textbox[status="found"] {
   box-shadow: 0 0 0 1em #F2FFF5 inset;
   color: black;
@@ -29,4 +27,11 @@ findbar {
   -moz-margin-start: 15px !important;
   font-weight:bold;
   text-shadow:rgba(0,0,0,0.15) 2px 2px 0.3em;
+}
+
+.findbar-regex{
+  -moz-margin-start: 5px;
+}
+.findbar-regex > .toolbarbutton-icon {
+  display: none;
 }

@@ -1,0 +1,52 @@
+Manifest-Version: 1.0
+
+Name: install.rdf
+Digest-Algorithms: MD5 SHA1
+MD5-Digest: GafJ9S0FghETqdXmGTpw1Q==
+SHA1-Digest: gV5wbLhkLP3gpT6TfrvkAn4yDw4=
+
+Name: chrome.manifest
+Digest-Algorithms: MD5 SHA1
+MD5-Digest: FFD41yPpkFzv8biIq+QuEw==
+SHA1-Digest: Er4F76nKlk1K3o/oYllAai300Y0=
+
+Name: icon.png
+Digest-Algorithms: MD5 SHA1
+MD5-Digest: wQXGXG7gA0EMHlHmdY1IHg==
+SHA1-Digest: BV5bowrgr2AWUwZzbodUc3KmdaE=
+
+Name: icon64.png
+Digest-Algorithms: MD5 SHA1
+MD5-Digest: zfOPifyDv58WwcjTNSXeKA==
+SHA1-Digest: YpuvLkt5W+uSj2EogQ1P1F8ZLMw=
+
+Name: content/firefoxOverlay.xul
+Digest-Algorithms: MD5 SHA1
+MD5-Digest: Tvuqs5KiQIrkXyJ1RuS/4A==
+SHA1-Digest: r9TY6G3yqNpfRsDAvqsg1+poWRY=
+
+Name: content/lib.js
+Digest-Algorithms: MD5 SHA1
+MD5-Digest: DxqtD9pMisPj/oYAa6pccQ==
+SHA1-Digest: F7Cfz/MQtLD4gRqmy8i7tAMJ9xU=
+
+Name: content/main.js
+Digest-Algorithms: MD5 SHA1
+MD5-Digest: W+jGjRmHhhvlFEhxs8FRHQ==
+SHA1-Digest: R0MbfU6M45I1rFOR32P0a6MnFcg=
+
+Name: content/regexfindbar.xml
+Digest-Algorithms: MD5 SHA1
+MD5-Digest: aKPIM2eD0+32U32RF1jnvQ==
+SHA1-Digest: 37E0OIzpdz8FtT0ywaB4Pcfv0Fw=
+
+Name: locale/en-US/regexfind.dtd
+Digest-Algorithms: MD5 SHA1
+MD5-Digest: GlMb0IQcF7I0/6A6KZORLQ==
+SHA1-Digest: aq+86uje7k18zJ3OkkH222ckN2M=
+
+Name: skin/style.css
+Digest-Algorithms: MD5 SHA1
+MD5-Digest: v3x1yIRfn3Sgkk6L7wxxug==
+SHA1-Digest: 0Li8x0Y+w1EWSRYC2VTD9tKY78o=
+
