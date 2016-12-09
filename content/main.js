@@ -1,5 +1,5 @@
 
-function findRegex(document,val,findAgain){                       //forward search
+function findRegex(window,val,findAgain){                       //forward search
   var lastNodeReached=false,continueSearch=true,exitSearch=false
   var results,lastNode,lastOffset
   var total=0,current=0
@@ -10,9 +10,9 @@ function findRegex(document,val,findAgain){                       //forward sear
   // if(!lines.length || !findAgain)  
   var lines=gFindBar.lines
   if(!lines.length)                                 //don't load the document structure again if the current 'lines' array may be used 
-    gFindBar.lines=getLines(document.body)                          //but if it's the first call load it
+    gFindBar.lines=getLines(window.document.body)                          //but if it's the first call load it
   
-  var data=getLastData(document,findAgain)                      //get last selection node and offset
+  var data=getLastData(window,findAgain)                      //get last selection node and offset
   if(data){ 
     lastNode=data.lastNode
     lastOffset=data.lastOffset
@@ -70,8 +70,8 @@ function findRegex(document,val,findAgain){                       //forward sear
   if(continueSearch){                                 //if nothing was found after the previous match
     if(!current) return false                           //nothing found in the whole document
     gFindBar.regexEndReached=true
-    document.getSelection().removeAllRanges()               
-    return findRegex(document,val,findAgain)                    //find again from the start
+    window.getSelection().removeAllRanges()               
+    return findRegex(window,val,findAgain)                    //find again from the start
   }
   
   gFindBar.globalResults.total=total
@@ -83,7 +83,7 @@ function findRegex(document,val,findAgain){                       //forward sear
   return results
 }
 
-function findRegexPrev(document,val){                         //backward search
+function findRegexPrev(window,val){                         //backward search
   var lastNodeReached=false,continueSearch=true
   var startNode,startOffset,endNode,endOffset,extremeOffset
   var results,lastNode,lastOffset
@@ -92,7 +92,7 @@ function findRegexPrev(document,val){                         //backward search
   var rx=createRegex(val)
   if(!rx) return false
   
-  var data=getLastData(document,false)                        //the same as in findRegex()
+  var data=getLastData(window,false)                        //the same as in findRegex()
   if(data){
     lastNode=data.lastNode
     lastOffset=data.lastOffset
@@ -154,8 +154,8 @@ function findRegexPrev(document,val){                         //backward search
   if(continueSearch){                               //the same
     if(!current) return false
     gFindBar.regexStartReached=true
-    document.getSelection().removeAllRanges()
-    return findRegexPrev(document,val)                      //search again from the end
+    window.getSelection().removeAllRanges()
+    return findRegexPrev(window,val)                      //search again from the end
   }
   
   total=gFindBar.globalResults.total
@@ -169,7 +169,7 @@ function findRegexPrev(document,val){                         //backward search
   return results
 }
 
-function findRegexAll(document,val,findAgain){                    //search all
+function findRegexAll(window,val,findAgain){                    //search all
   var foundValues=[]
   
   val=normalizePattern(val)
@@ -177,9 +177,9 @@ function findRegexAll(document,val,findAgain){                    //search all
   
   var lines=gFindBar.lines
   if(!lines.length)                               //if the checkbox is checked but the 'lines' is empty
-    gFindBar.lines=getLines(document.body)                        
+    gFindBar.lines=getLines(window.document.body)                        
 
-  var rx=new RegExp(val,"gim")
+  var rx=createRegex(val)
 
   for(var l in lines){
     var text=lines[l].text

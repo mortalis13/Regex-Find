@@ -3,12 +3,9 @@
 <overlay id="regex-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 	<script src="chrome://regexfind/content/lib.js"/>
 	<script src="chrome://regexfind/content/main.js"/>
+	<script src="chrome://regexfind/content/init.js"/>
 
 	<commandset id="mainCommandSet">
 		<command id="cmd_find" oncommand="toggleFindbar()" />
 	</commandset>
-	
-	<keyset id="mainKeyset">
-		<key id="key_findRegexPrev" keycode="VK_F2" oncommand="keyFindPrev()" />
-	</keyset>
 </overlay>

@@ -58,6 +58,8 @@ function createRegex(val){
   
   var flags="gm"
   if(!gFindBar.regexCaseSensitive) flags+="i"
+  if(gFindBar.regexEntireWord)
+    val="\\b"+val+"\\b";
   return new RegExp(val,flags)
 }
 
@@ -146,9 +148,9 @@ function getResults(nodes,idx,end){                             //get start/end 
   return results
 }
 
-function getLastData(document,findAgain){                   //get lastNode/Offset of the current selection
+function getLastData(window,findAgain){                   //get lastNode/Offset of the current selection
   var lastNode,lastOffset                           //the selection may be formed after term find
-  var selection=document.getSelection()                   //or by selecting text in the document
+  var selection=window.getSelection()                   //or by selecting text in the document
                                         //or by clicking with mouse in the document
   if(!selection.rangeCount) return false
   
@@ -203,20 +205,22 @@ function searchLast(rx,text,extremeOffset){                       //for the find
   return {index:index,length:length}
 }
 
-function setSelection(results,document,highlightAll){
+function setSelection(results,window,highlightAll){
   var startNode=results.startNode
   var startOffset=results.startOffset
   var endNode=results.endNode
   var endOffset=results.endOffset
   
-  var selection=document.getSelection()
-  var range=document.createRange()
+  var selection=window.getSelection()
+  var range=window.document.createRange()
   range.setStart(startNode, startOffset)
   range.setEnd(endNode,endOffset)
   if(!highlightAll) selection.removeAllRanges()
   selection.addRange(range)
   
-  var controller=gBrowser.docShell.QueryInterface(Ci.nsIInterfaceRequestor)
+  var docShell=gBrowser.contentWindow.QueryInterface(Ci.nsIInterfaceRequestor)
+        .getInterface(Ci.nsIWebNavigation).QueryInterface(Ci.nsIDocShell);
+  var controller=docShell.QueryInterface(Ci.nsIInterfaceRequestor)
         .getInterface(Ci.nsISelectionDisplay).QueryInterface(Ci.nsISelectionController)
         
   var selectionType=highlightAll?controller.SELECTION_DISABLED:controller.SELECTION_ATTENTION     //choose color
@@ -230,8 +234,8 @@ function setSelection(results,document,highlightAll){
     controller.scrollSelectionIntoView(scrollSelectionType,scrollRegion,scrollType)         //scroll
 }
 
-function clearSelection(document){
-  var selection=document.getSelection()
+function clearSelection(window){
+  var selection=window.getSelection()
   selection.removeAllRanges()
   gFindBar._findField.removeAttribute("status")
   gFindBar._foundMatches.hidden=true
