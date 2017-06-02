@@ -3,16 +3,17 @@
   <Description about="urn:mozilla:install-manifest">
     <em:id>regexfind@findbar.org</em:id>
     <em:name>Regex Find</em:name>
-    <em:version>1.1.2-signed</em:version>
+    <em:version>1.1.4-signed</em:version>
     <em:type>2</em:type>
-	
-	<em:description>Adds Regular expressions functionality to the findbar</em:description>
-    <em:creator>gatorojo90</em:creator>
-	
+  
+    <em:description>Adds Regular expressions functionality to the findbar</em:description>
+    <em:creator>mortalis</em:creator>
+     
+    <!-- Firefox -->
     <em:targetApplication>
       <Description>
-        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> 		<!-- firefox -->
-        <em:minVersion>45.0</em:minVersion>
+        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>     
+        <em:minVersion>45.*</em:minVersion>
         <em:maxVersion>53.*</em:maxVersion>
       </Description>
     </em:targetApplication>

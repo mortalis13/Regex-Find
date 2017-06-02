@@ -1,1 +1,1 @@
-// pref("extensions.regexfind.key_findRegexPrevState", "on");
+pref("extensions.regexfind.key_findRegexPrevState", "on");

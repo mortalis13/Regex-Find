@@ -9,9 +9,24 @@ var prefObserver={
   }
 };
 
+var tabsProgressListener={
+  onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation, aFlags){
+    if(gFindBar){
+      // clear list of lines/nodes when reloading page/changing url
+      gFindBar.lines = [];
+      gFindBar._foundMatches.hidden=true
+      gFindBar._foundMatches.value=""
+      gFindBar._findStatusDesc.textContent=""
+    }
+    else{
+      console.log('gFindBar is empty');
+    }
+  }
+};
+
 function updateKeysetPref(){
   var key_findRegexPrevState = pref(prefs["key_findRegexPrevState"]);
-  //console.log("key_findRegexPrevState: " + key_findRegexPrevState);
+  // console.log("key_findRegexPrevState: " + key_findRegexPrevState);
   
   if(key_findRegexPrevState == "on"){
     addKeyset();
@@ -63,9 +78,11 @@ function pref(name,value){                            //get/set prefs
   }
 }
 
-function optionsInit(){
+function init(){
   updateKeysetPref();
   Services.prefs.addObserver(prefs["key_findRegexPrevState"],prefObserver,false);
+  
+  gBrowser.addTabsProgressListener(tabsProgressListener);
 }
 
-optionsInit();
+init();

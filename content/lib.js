@@ -258,12 +258,12 @@ function updateUI(status,uiData){                       //set found status, matc
         gFindBar._foundMatches.hidden=false
         gFindBar._foundMatches.value=matches
         
-        if(gFindBar.regexEndReached)
-          gFindBar._findStatusDesc.textContent="End Reached"
-        else if(gFindBar.regexStartReached)
-          gFindBar._findStatusDesc.textContent="Start Reached"
-        else
-          gFindBar._findStatusDesc.textContent=""
+        gFindBar._findStatusDesc.textContent=""
+        
+        // if(gFindBar.regexEndReached)
+        //   gFindBar._findStatusDesc.textContent="End Reached"
+        // else if(gFindBar.regexStartReached)
+        //   gFindBar._findStatusDesc.textContent="Start Reached"
           
         gFindBar.regexEndReached=false
         gFindBar.regexStartReached=false

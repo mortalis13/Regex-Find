@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 
 Name: install.rdf
 Digest-Algorithms: MD5 SHA1
-MD5-Digest: GafJ9S0FghETqdXmGTpw1Q==
-SHA1-Digest: gV5wbLhkLP3gpT6TfrvkAn4yDw4=
+MD5-Digest: 3fAG/rfRUuhKLKRv71qihQ==
+SHA1-Digest: bWrIvYPIKB2Yv1XzSsOUBwIgq/g=
 
 Name: chrome.manifest
 Digest-Algorithms: MD5 SHA1
@@ -20,25 +20,40 @@ Digest-Algorithms: MD5 SHA1
 MD5-Digest: zfOPifyDv58WwcjTNSXeKA==
 SHA1-Digest: YpuvLkt5W+uSj2EogQ1P1F8ZLMw=
 
+Name: options.xul
+Digest-Algorithms: MD5 SHA1
+MD5-Digest: tvyGeedZFhpJ0Z75rH/0Qw==
+SHA1-Digest: 4rEUB7Cu7GKeGuXWkHkY+AwTj98=
+
 Name: content/firefoxOverlay.xul
 Digest-Algorithms: MD5 SHA1
-MD5-Digest: Tvuqs5KiQIrkXyJ1RuS/4A==
-SHA1-Digest: r9TY6G3yqNpfRsDAvqsg1+poWRY=
+MD5-Digest: 9iAlvnNzSduRvld1BJCtHA==
+SHA1-Digest: 4jUqHbDNrk4ZRFtb4bva89b7gYk=
+
+Name: content/init.js
+Digest-Algorithms: MD5 SHA1
+MD5-Digest: y8kc21nh2sRqcEEdq65MCQ==
+SHA1-Digest: 84X1VrLw8FBAahVQ9TSmiXzSodk=
 
 Name: content/lib.js
 Digest-Algorithms: MD5 SHA1
-MD5-Digest: DxqtD9pMisPj/oYAa6pccQ==
-SHA1-Digest: F7Cfz/MQtLD4gRqmy8i7tAMJ9xU=
+MD5-Digest: BrwHpK1hfEjpb/wMLuPVOw==
+SHA1-Digest: p2ZDwSVfZT7TbkqarTljLV8uw48=
 
 Name: content/main.js
 Digest-Algorithms: MD5 SHA1
-MD5-Digest: W+jGjRmHhhvlFEhxs8FRHQ==
-SHA1-Digest: R0MbfU6M45I1rFOR32P0a6MnFcg=
+MD5-Digest: u1nKMC3X3lwqawP7pBlR2w==
+SHA1-Digest: WwqujJnqIOHwWvffYQV7YGtLWO0=
+
+Name: content/prefs.js
+Digest-Algorithms: MD5 SHA1
+MD5-Digest: g3W939Wc60jLjc7+ijMrww==
+SHA1-Digest: bpu685QqX/Mt+vAByzjzzb8lAQc=
 
 Name: content/regexfindbar.xml
 Digest-Algorithms: MD5 SHA1
-MD5-Digest: aKPIM2eD0+32U32RF1jnvQ==
-SHA1-Digest: 37E0OIzpdz8FtT0ywaB4Pcfv0Fw=
+MD5-Digest: 9TY3Rhgg/HB3u0nLh7ddhQ==
+SHA1-Digest: PNk8e2B3rySfo9ldO4M90qwCnqA=
 
 Name: locale/en-US/regexfind.dtd
 Digest-Algorithms: MD5 SHA1
@@ -47,6 +62,6 @@ SHA1-Digest: aq+86uje7k18zJ3OkkH222ckN2M=
 
 Name: skin/style.css
 Digest-Algorithms: MD5 SHA1
-MD5-Digest: v3x1yIRfn3Sgkk6L7wxxug==
-SHA1-Digest: 0Li8x0Y+w1EWSRYC2VTD9tKY78o=
+MD5-Digest: eXiZFye5k6dmbRNofcgydQ==
+SHA1-Digest: Jsdnt6U37HMruL5PUhUkCdk2tyo=
 

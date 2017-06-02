@@ -2,8 +2,8 @@
 <vbox xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 	<setting pref="extensions.regexfind.key_findRegexPrevState" type="radio" title="F2 Key State">
 	  <radiogroup>
-		<radio value="on" label="On"/>
-		<radio value="off" label="Off"/>
+  		<radio value="on" label="On"/>
+  		<radio value="off" label="Off"/>
 	  </radiogroup>
 	</setting>
 </vbox>
