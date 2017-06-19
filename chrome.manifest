@@ -4,3 +4,6 @@ skin		regexfind		classic/1.0		skin/
 
 overlay		chrome://browser/content/browser.xul			chrome://regexfind/content/firefoxOverlay.xul
 style		chrome://global/content/customizeToolbar.xul	chrome://regexfind/skin/style.css
+
+component {d2bf902e-6ed8-46c5-88b5-f2c6943f70be} components/regexfind_comp.js
+contract @mozilla.org/embedcomp/rangefind;1 {d2bf902e-6ed8-46c5-88b5-f2c6943f70be}

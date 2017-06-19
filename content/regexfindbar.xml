@@ -72,35 +72,35 @@
       <field name="EXCEPTION">2</field>
 
 
-      <method name="_find">
+      <!-- <method name="_find">
         <parameter name="aValue"/>
         <body>
           <![CDATA[
             _find_port.call(this, aValue);
           ]]>
         </body>
-      </method>
+      </method> -->
 
       <!--
         - Stub for find-next and find-previous commands
         - @param aFindPrevious
         -        true for find-previous, false otherwise.
         -->
-      <method name="onFindAgainCommand">
+      <!-- <method name="onFindAgainCommand">
         <parameter name="aFindPrevious"/>
         <body>
           <![CDATA[
             onFindAgainCommand_port.call(this, aFindPrevious);
           ]]>
         </body>
-      </method>
+      </method> -->
 
       <!--
         - Turns highlight on or off.
         - @param aHighlight (boolean)
         -        Whether to turn the highlight on or off
         -->
-      <method name="toggleHighlight">
+      <!-- <method name="toggleHighlight">
         <parameter name="aHighlight"/>
         <parameter name="aFromPrefObserver"/>
         <body>
@@ -108,28 +108,28 @@
             toggleHighlight_port.call(this, aHighlight, aFromPrefObserver);
           ]]>
         </body>
-      </method>
+      </method> -->
 
       <!--
         - Sets the findbar case-sensitivity mode
         - @param aCaseSensitive (boolean)
         -        Whether or not case-sensitivity should be turned on.
         -->
-      <method name="_setCaseSensitivity">
+      <!-- <method name="_setCaseSensitivity">
         <parameter name="aCaseSensitivity"/>
         <body>
           <![CDATA[
             _setCaseSensitivity_port.call(this, aCaseSensitivity);
           ]]>
         </body>
-      </method>
+      </method> -->
 
       <!--
         - Sets the findbar entire-word mode
         - @param aEntireWord (boolean)
         - Whether or not entire-word mode should be turned on.
         -->
-      <method name="toggleEntireWord">
+      <!-- <method name="toggleEntireWord">
         <parameter name="aEntireWord"/>
         <parameter name="aFromPrefObserver"/>
         <body>
@@ -137,7 +137,7 @@
             toggleEntireWord_port.call(this, aEntireWord, aFromPrefObserver);
           ]]>
         </body>
-      </method>
+      </method> -->
       
       <!-- Regex methods -->
 
