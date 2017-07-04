@@ -2,10 +2,9 @@
 const {classes: Cc, interfaces: Ci, utils: Cu}=Components;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
-// Cu.import("chrome://regexfind/content/main.js");
-Cu.import("chrome://regexfind/content/lib.js");
 Cu.import("chrome://regexfind/content/util.js");
 Cu.import("chrome://regexfind/content/text-extractor.js");
+
 
 function Regex_Find() {}
 
@@ -20,68 +19,22 @@ Regex_Find.prototype = {
   mFindBackwards: false,
   mEntireWord: false,
   
+  mLastIndex: 0,
+  
+  gWindow: null,
+  gFindBar: null,
+  
+  textExtractor: null,
+  
   
   Find: function(pattern, searchRange, startPoint, endPoint) {
-    var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
-    var gWindow = wm.getMostRecentWindow("navigator:browser");
-    var gFindBar = gWindow.gFindBar;
+    this.getBrowserEnv();
     
-    var console = gWindow.console;
-    
-    util.logu('__Find()');
-    
-    var regexSearch = gFindBar.regexSearch;
+    var regexSearch = this.gFindBar.regexSearch;
     
     if(regexSearch){
-      resultRange = searchRange.cloneRange();
-      if (startPoint) {
-        if (this.mFindBackwards)
-          resultRange.setEnd(startPoint.startContainer, startPoint.startOffset);
-        else
-          resultRange.setStart(startPoint.endContainer, startPoint.endOffset);
-      }
-      
-      var contentWindow = gWindow.gBrowser.contentWindow;
-      
-      textExtractor.init(contentWindow.document, resultRange);
-      var text = textExtractor.mTextContent;
-      
-      var flags = "m";
-      if (!this.mCaseSensitive) flags+="i";
-      if (this.mFindBackwards) flags+="g";
-      
-      try{
-        var rx = new RegExp(pattern, flags);
-        // rx.ignoreCase = !this.mCaseSensitive;
-        var regexResult = rx.exec(text);
-        
-        if(regexResult){
-          var index = regexResult.index;
-          var length = regexResult[0].length;
-          
-          if (this.mFindBackwards) {
-            regexResult = rx.exec(text);
-            while (regexResult) {
-              index = regexResult.index;
-              length = regexResult[0].length;
-              regexResult = rx.exec(text);
-            }
-          }
-          
-          resultRange = textExtractor.getTextRange(index, length);
-          util.logu('regex resultRange');
-          return resultRange;
-        }
-      }
-      catch(e) {
-        // console.log('Error:', e);
-        util.log('Error:', e);
-        
-        // gFindBar._findFailedString = null;
-        // gFindBar._findResetTimeout = -1;
-      }
-      
-      // this.oldFind();
+      // return this.find_regex_1(pattern, searchRange, startPoint, endPoint);
+      return this.find_regex(pattern, searchRange, startPoint, endPoint);
     }
     else{
       var rangefindComp = Components.classesByID["{471f4944-1dd2-11b2-87ac-90be0a51d609}"];
@@ -92,13 +45,127 @@ Regex_Find.prototype = {
       findService.entireWord = this.mEntireWord;
       
       var resultRange = findService.Find(pattern, searchRange, startPoint, endPoint);
-      // console.log('default resultRange', Math.random());
-      return resultRange;
       // util.dumpRange(resultRange);
+      return resultRange;
     }
     
-    // console.log('return null', Math.random());
+    // return null;
+  },
+  
+  
+  find_regex: function(pattern, searchRange, startPoint, endPoint) {
+    var resultRange = searchRange.cloneRange();
+    if (startPoint) {
+      if (this.mFindBackwards)
+        resultRange.setEnd(startPoint.startContainer, startPoint.startOffset);
+      else
+        resultRange.setStart(startPoint.endContainer, startPoint.endOffset);
+    }
+    
+    var contentWindow = this.gWindow.gBrowser.contentWindow;
+    
+    if(!this.gFindBar.regexInitialized){
+      this.textExtractor = new TextExtractor();
+      this.textExtractor.init(contentWindow.document, null);
+      this.gFindBar.regexInitialized = true;
+    }
+    var text = this.textExtractor.mTextContent;
+    
+    var flags = "gm";
+    if (!this.mCaseSensitive) flags+="i";
+    // if (this.mFindBackwards) flags+="g";
+    
+    try{
+      var rx = new RegExp(pattern, flags);
+      rx.lastIndex = this.mLastIndex;
+      var regexResult = rx.exec(text);
+      
+      if(regexResult){
+        var index = regexResult.index;
+        var length = regexResult[0].length;
+        
+        this.mLastIndex = rx.lastIndex;
+        
+        if (this.mFindBackwards) {
+          regexResult = rx.exec(text);
+          while (regexResult) {
+            index = regexResult.index;
+            length = regexResult[0].length;
+            regexResult = rx.exec(text);
+          }
+        }
+        
+        resultRange = this.textExtractor.getTextRange(index, length);
+        return resultRange;
+      }
+    }
+    catch(e) {}
+    
+    this.mLastIndex = 0;
+    
     return null;
+  },
+  
+  
+  find_regex_1: function(pattern, searchRange, startPoint, endPoint) {
+    var resultRange = searchRange.cloneRange();
+    if (startPoint) {
+      if (this.mFindBackwards)
+        resultRange.setEnd(startPoint.startContainer, startPoint.startOffset);
+      else
+        resultRange.setStart(startPoint.endContainer, startPoint.endOffset);
+    }
+    
+    var contentWindow = gWindow.gBrowser.contentWindow;
+    
+    textExtractor.init(contentWindow.document, resultRange);
+    var text = textExtractor.mTextContent;
+    
+    // var nodes = textExtractor.mNodeContent;
+    // util.dumpNodes(nodes);
+    // util.log(nodes);
+    // util.log(text);
+    
+    var flags = "m";
+    if (!this.mCaseSensitive) flags+="i";
+    if (this.mFindBackwards) flags+="g";
+    
+    try{
+      var rx = new RegExp(pattern, flags);
+      // rx.ignoreCase = !this.mCaseSensitive;
+      var regexResult = rx.exec(text);
+      
+      if(regexResult){
+        var index = regexResult.index;
+        var length = regexResult[0].length;
+        
+        if (this.mFindBackwards) {
+          regexResult = rx.exec(text);
+          while (regexResult) {
+            index = regexResult.index;
+            length = regexResult[0].length;
+            regexResult = rx.exec(text);
+          }
+        }
+        
+        resultRange = textExtractor.getTextRange(index, length);
+        return resultRange;
+      }
+    }
+    catch(e) {
+      // util.log('Error:', e);
+    }
+    
+    return null;
+  },
+  
+  
+  getBrowserEnv: function(){
+    if(!this.gWindow || !this.gFindBar){
+      var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
+      this.gWindow = wm.getMostRecentWindow("navigator:browser");
+      this.gFindBar = this.gWindow.gFindBar;
+    }
   },
   
   
@@ -121,18 +188,13 @@ Regex_Find.prototype = {
     this.mEntireWord = value;
   },
   
-  
-  oldFind: function(){
-    // --- 'lines' methos ---
-    // main.init(gFindBar);
-    
-    // var contentWindow = gWindow.gBrowser.contentWindow;
-    // var results = main.findRegex(contentWindow, pattern, false);
-    
-    // resultRange.setStart(results.startNode, results.startOffset);
-    // resultRange.setEnd(results.endNode, results.endOffset);
+  get lastIndex() {
+    return this.mLastIndex;
   },
-
+  set lastIndex(value) {
+    this.mLastIndex = value;
+  },
+  
 }
 
 var components = [Regex_Find];

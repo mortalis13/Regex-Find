@@ -1,7 +1,8 @@
 
 const {classes: Cc, interfaces: Ci, utils: Cu}=Components;
 
-var EXPORTED_SYMBOLS = ['textExtractor'];
+// var EXPORTED_SYMBOLS = ['textExtractor'];
+var EXPORTED_SYMBOLS = ['TextExtractor'];
 
 
 function fbNodeInfo() {}
@@ -12,38 +13,42 @@ fbNodeInfo.prototype = {
   mNode: null
 }
 
-var textExtractor = {
+function TextExtractor() {}
+TextExtractor.prototype = {
   
   mTextContent: '',
   mDocument: null,
   mNodeContent: [],
+  initialized: false,
   
   
   init: function(document, range) {
-    if (!document)
-      throw Components.results.NS_ERROR_INVALID_ARG;
+    // if(this.initialized) return;
+    
+    if (!document) throw Components.results.NS_ERROR_INVALID_ARG;
       
     this.mDocument = null;
     this.mTextContent = '';
     this.mNodeContent = [];
+    // if(this.mNodeContent.length != 0) return;
     
     var currentNode;
-    var end;
+    var endNode;
     var startOffset = 0;
     var endOffset = 0;
     
     if (!range) {
       if (document instanceof Ci.nsIDOMHTMLDocument)
-        end = document.body;
+        endNode = document.body;
       else
-        end = document.documentElement;
+        endNode = document.documentElement;
       
-      if (!end) {
+      if (!endNode) {
         this.mDocument = document;
         return;
       }
       
-      currentNode = end.firstChild;
+      currentNode = endNode.firstChild;
       if (!currentNode) {
         this.mDocument = document;
         return NS_OK;
@@ -53,18 +58,18 @@ var textExtractor = {
       var type;
       var children;
 
-      end = range.endContainer;
-      type = end.nodeType;
+      endNode = range.endContainer;
       endOffset = range.endOffset;
+      type = endNode.nodeType;
 
       if (type == Ci.nsIDOMNode.ELEMENT_NODE) {
-        children = end.childNodes;
-        end = children[endOffset-1];
+        children = endNode.childNodes;
+        endNode = children[endOffset-1];
       }
 
       currentNode = range.startContainer;
-      type = currentNode.nodeType;
       startOffset = range.startOffset;
+      type = currentNode.nodeType;
       
       if ((type == Ci.nsIDOMNode.ELEMENT_NODE) && (startOffset>0)) {
         children = currentNode.childNodes;
@@ -73,7 +78,7 @@ var textExtractor = {
         if (startOffset<length)
           currentNode = children[startOffset];
         else if (length > 0)
-          currentNode = this.walkPastTree(currentNode, end);
+          currentNode = this.walkPastTree(currentNode, endNode);
         
         startOffset = 0;
       }
@@ -86,12 +91,12 @@ var textExtractor = {
       
       var nextNode;
       if ( (type == Ci.nsIDOMNode.TEXT_NODE) || (type == Ci.nsIDOMNode.CDATA_SECTION_NODE) ) {
-        if (currentNode != end)
+        if (currentNode != endNode)
           this.addTextNode(currentNode, startOffset);
         else
           this.addTextNode(currentNode, startOffset, endOffset);
         
-        nextNode = this.walkPastTree(currentNode, end);
+        nextNode = this.walkPastTree(currentNode, endNode);
         currentNode = nextNode;
         startOffset = 0;
         
@@ -104,17 +109,18 @@ var textExtractor = {
         var display = style.getPropertyValue("display");
         
         if (display=="none") {
-          nextNode = this.walkPastTree(currentNode, end);
+          nextNode = this.walkPastTree(currentNode, endNode);
           currentNode = nextNode;
           continue;
         }
       }
       
-      nextNode = this.walkIntoTree(currentNode, end);
+      nextNode = this.walkIntoTree(currentNode, endNode);
       currentNode = nextNode;
     }
     
     this.mDocument = document;
+    // this.initialized = true;
   },
   
   

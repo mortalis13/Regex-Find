@@ -66,6 +66,7 @@
 
       <field name="regexEndReached">false</field>
       <field name="regexStartReached">false</field>
+      <field name="regexInitialized">false</field>
 
       <field name="FOUND">0</field>
       <field name="NOT_FOUND">1</field>

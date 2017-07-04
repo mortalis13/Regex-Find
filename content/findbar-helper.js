@@ -94,6 +94,8 @@ function toggleEntireWord_port(aEntireWord, aFromPrefObserver){
 // ---------------------------- regex_methods ----------------------------
 
 function _setRegexFind_port(aRegex){
+  this.regexInitialized = false;
+  
   this.lines=[]
   this.globalResults={total:0}
 
