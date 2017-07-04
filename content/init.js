@@ -79,10 +79,11 @@ function pref(name,value){                            //get/set prefs
 }
 
 function init(){
-  updateKeysetPref();
-  Services.prefs.addObserver(prefs["key_findRegexPrevState"],prefObserver,false);
+  // updateKeysetPref();
+  // Services.prefs.addObserver(prefs["key_findRegexPrevState"],prefObserver,false);
   
-  gBrowser.addTabsProgressListener(tabsProgressListener);
+  // console.log('addTabsProgressListener', gBrowser.addTabsProgressListener);
+  // gBrowser.addTabsProgressListener(tabsProgressListener);
 }
 
 init();

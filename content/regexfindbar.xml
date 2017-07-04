@@ -72,14 +72,14 @@
       <field name="EXCEPTION">2</field>
 
 
-      <!-- <method name="_find">
+      <method name="_find">
         <parameter name="aValue"/>
         <body>
           <![CDATA[
             _find_port.call(this, aValue);
           ]]>
         </body>
-      </method> -->
+      </method>
 
       <!--
         - Stub for find-next and find-previous commands

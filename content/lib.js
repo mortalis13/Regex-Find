@@ -79,14 +79,15 @@ var lib = {
 
 
   createRegex: function(val){
-    val=this.normalizePattern(val)                                     
+    // val=this.normalizePattern(val)                                     
     if(val===false) return false
     
     var flags="gm"
     if(!this.gFindBar.regexCaseSensitive) flags+="i"
     if(this.gFindBar.regexEntireWord)
       val="\\b"+val+"\\b";
-    return new RegExp(val,flags)
+    
+    return new RegExp(val, flags)
   },
 
   normalizePattern: function(val){

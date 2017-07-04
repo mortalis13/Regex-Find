@@ -1,68 +1,27 @@
 
 function _find_port(aValue){
   if(this.regexSearch){
-    let val = aValue || this._findField.value;
-    var window=this.browser.contentWindow
-
-    if(val){
-      var findAgain=false
-      if(val==this.prevRegexValue) findAgain=true         //if the search field isn't changed find again
-      this.prevRegexValue=val
-
-      try{
-        if(this.regexHighlight && !findAgain){         //if the highlight all is checked and the search field is changed
-          this.toggleHighlight(true)              //then continue highlighting all
-        }
-        else{
-          if(this.regexHighlight){              //if F3/F2 pressed uncheck the highlight all (and search one occurence)
-            resetHighlightAllColor()
-            this.regexHighlight=false
-            this.getElement("highlight").removeAttribute("checked")
-          }
-
-          var results
-          if(!this.regexFindPrevious){
-            results=findRegex(window,val,findAgain)
-          }
-          else{
-            this.regexFindPrevious=false
-            results=findRegexPrev(window,val)
-          }
-
-          if(results){
-            setSelection(results,window,false)
-            updateUI(this.FOUND,results.uiData)         //set status and matches count
-            this._enableFindButtons(val)
-          }
-          else{
-            clearSelection(window)
-            updateUI(this.NOT_FOUND,false)
-          }
-        }
-      }
-      catch(e){
-        updateUI(this.EXCEPTION,e)                  //should be a regex error (incorrect using of control symbols [*+?^$])
-      }
-    }
-    else{
-      clearSelection(window)
-    }
+    this._findFailedString = null;
+    this._findResetTimeout = -1;
   }
-  else{
-    //default search
-    findbarNative._find.call(this, aValue);
-  }
+  
+  findbarNative._find.call(this, aValue);
 }
 
 
 function onFindAgainCommand_port(aFindPrevious){
-  if(this.regexSearch){
-    this.regexFindPrevious=aFindPrevious
-    this._find(this._findField.value)                 //redirect to the _find()
-  }
-  else{
-    return findbarNative.onFindAgainCommand.call(this, aFindPrevious);
-  }
+  // if(this.regexSearch){
+  //   this.regexFindPrevious=aFindPrevious
+  //   this._find(this._findField.value)                 //redirect to the _find()
+  // }
+  // else{
+  //   return findbarNative.onFindAgainCommand.call(this, aFindPrevious);
+  // }
+  
+  var console=this.browser.contentWindow.console;
+  console.log('onFindAgainCommand_port', Math.random().toFixed(5));
+  
+  return findbarNative.onFindAgainCommand.call(this, aFindPrevious);
 }
 
 
@@ -140,7 +99,7 @@ function _setRegexFind_port(aRegex){
 
   this.regexSearch=aRegex
   if(!aRegex){                                                           // reset the regex searching
-    clearSelection(this.browser.contentWindow)
+    // clearSelection(this.browser.contentWindow)
     this.prevRegexValue=""
   }
 
