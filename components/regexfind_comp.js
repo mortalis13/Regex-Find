@@ -24,7 +24,7 @@ Regex_Find.prototype = {
   gWindow: null,
   gFindBar: null,
   
-  textExtractor: null,
+  mTextExtractor: null,
   
   
   Find: function(pattern, searchRange, startPoint, endPoint) {
@@ -33,7 +33,6 @@ Regex_Find.prototype = {
     var regexSearch = this.gFindBar.regexSearch;
     
     if(regexSearch){
-      // return this.find_regex_1(pattern, searchRange, startPoint, endPoint);
       return this.find_regex(pattern, searchRange, startPoint, endPoint);
     }
     else{
@@ -45,11 +44,8 @@ Regex_Find.prototype = {
       findService.entireWord = this.mEntireWord;
       
       var resultRange = findService.Find(pattern, searchRange, startPoint, endPoint);
-      // util.dumpRange(resultRange);
       return resultRange;
     }
-    
-    // return null;
   },
   
   
@@ -63,41 +59,53 @@ Regex_Find.prototype = {
     }
     
     var contentWindow = this.gWindow.gBrowser.contentWindow;
+    this.mTextExtractor = this.gFindBar.textExtractor;
     
     if(!this.gFindBar.regexInitialized){
-      this.textExtractor = new TextExtractor();
-      this.textExtractor.init(contentWindow.document, null);
+      this.mTextExtractor = new TextExtractor();
+      this.mTextExtractor.init(contentWindow.document, null);
       this.gFindBar.regexInitialized = true;
+      this.gFindBar.textExtractor = this.mTextExtractor;
     }
-    var text = this.textExtractor.mTextContent;
+    var text = this.mTextExtractor.mTextContent;
     
     var flags = "gm";
     if (!this.mCaseSensitive) flags+="i";
-    // if (this.mFindBackwards) flags+="g";
     
     try{
       var rx = new RegExp(pattern, flags);
       rx.lastIndex = this.mLastIndex;
+      var currentLastIndex = rx.lastIndex;
       var regexResult = rx.exec(text);
       
-      if(regexResult){
-        var index = regexResult.index;
-        var length = regexResult[0].length;
-        
-        this.mLastIndex = rx.lastIndex;
-        
-        if (this.mFindBackwards) {
-          regexResult = rx.exec(text);
-          while (regexResult) {
+      var index = null, length = null;
+      
+      if (this.mFindBackwards) {
+        var prevFound = false;
+        while(!prevFound){
+          if(regexResult){
             index = regexResult.index;
             length = regexResult[0].length;
-            regexResult = rx.exec(text);
+            this.mLastIndex = rx.lastIndex;
+          }
+          
+          regexResult = rx.exec(text);
+          if(rx.lastIndex == currentLastIndex){
+            prevFound = true;
           }
         }
-        
-        resultRange = this.textExtractor.getTextRange(index, length);
-        return resultRange;
       }
+      else{
+        if(regexResult){
+          index = regexResult.index;
+          length = regexResult[0].length;
+        }
+        
+        this.mLastIndex = rx.lastIndex;
+      }
+      
+      resultRange = this.mTextExtractor.getTextRange(index, length);
+      return resultRange;
     }
     catch(e) {}
     
@@ -188,12 +196,30 @@ Regex_Find.prototype = {
     this.mEntireWord = value;
   },
   
-  get lastIndex() {
-    return this.mLastIndex;
-  },
-  set lastIndex(value) {
-    this.mLastIndex = value;
-  },
+  // get lastIndex() {
+  //   return this.mLastIndex;
+  // },
+  // set lastIndex(value) {
+  //   this.mLastIndex = value;
+  // },
+  // get gWindow() {
+  //   return this.mgWindow;
+  // },
+  // set gWindow(value) {
+  //   this.mgWindow = value;
+  // },
+  // get gFindBar() {
+  //   return this.mgFindBar;
+  // },
+  // set gFindBar(value) {
+  //   this.mgFindBar = value;
+  // },
+  // get textExtractor() {
+  //   return this.mTextExtractor;
+  // },
+  // set textExtractor(value) {
+  //   this.mTextExtractor = value;
+  // },
   
 }
 

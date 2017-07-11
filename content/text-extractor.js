@@ -19,12 +19,9 @@ TextExtractor.prototype = {
   mTextContent: '',
   mDocument: null,
   mNodeContent: [],
-  initialized: false,
   
   
   init: function(document, range) {
-    // if(this.initialized) return;
-    
     if (!document) throw Components.results.NS_ERROR_INVALID_ARG;
       
     this.mDocument = null;
@@ -120,7 +117,6 @@ TextExtractor.prototype = {
     }
     
     this.mDocument = document;
-    // this.initialized = true;
   },
   
   
@@ -202,6 +198,8 @@ TextExtractor.prototype = {
   },
 
   getTextRange: function(offset, length) {
+    if(offset === null || length === null) return null;
+    
     if (!this.mDocument) throw Components.results.NS_ERROR_NOT_INITIALIZED;
     
     var range = this.mDocument.createRange();
