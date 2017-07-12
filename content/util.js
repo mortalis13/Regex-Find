@@ -9,6 +9,18 @@ var console = gWindow.console;
 
 var util = {
   
+  dumpRangeObject: function(range){
+    if(range){
+      try{
+        console.log('Range => ', range);
+      }
+      catch(e){}
+    }
+    else{
+      console.log('range is null');
+    }
+  },
+  
   dumpRange: function(range){
     if(range){
       console.log('Range => "' + range.startContainer.textContent + '": ' + range.startOffset + ' :: "' + range.endContainer.textContent + '": ' + range.endOffset);
@@ -42,6 +54,19 @@ var util = {
   // log unique message (to split duplicated messages with different timestamps)
   logu: function(msg){
     this.log(msg, Math.random().toFixed(5));
+  },
+  
+  getTag: function(node){
+    if(!this.isElement(node)) return null;
+    
+    var tag=node.tagName
+    if(tag) tag=tag.toLowerCase()
+    return tag
+  },
+  
+  isElement: function(node){
+    if(node.nodeType != Ci.nsIDOMNode.ELEMENT_NODE) return false;
+    return true;
   },
   
 }

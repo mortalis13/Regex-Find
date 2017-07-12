@@ -141,6 +141,7 @@ TextExtractor.prototype = {
     }
   },
 
+
   walkPastTree: function(current, limit) {
     var next;
 
@@ -198,7 +199,7 @@ TextExtractor.prototype = {
   },
 
   getTextRange: function(offset, length) {
-    if(offset === null || length === null) return null;
+    if(offset === null || !length) return null;
     
     if (!this.mDocument) throw Components.results.NS_ERROR_NOT_INITIALIZED;
     
