@@ -52,6 +52,8 @@ Regex_Find.prototype = {
     if (!this.mCaseSensitive) flags+="i";
     if (this.mEntireWord) pattern = '\\b' + pattern + '\\b';
     
+    // 
+    
     try{
       var rx = new RegExp(pattern, flags);
       rx.lastIndex = this.mLastIndex;
@@ -98,13 +100,13 @@ Regex_Find.prototype = {
       }
       
       // run built-in Find() to prepare some search values for correct selection in textarea/inputs
-      this.dummyFindRun();
+      this.dummyFindRun(pattern, searchRange, startPoint, endPoint);
       
       resultRange = this.mTextExtractor.getTextRange(index, length);
       return resultRange;
     }
     catch(e) {
-      // util.log(e);
+      util.log(e);
     }
     
     this.mLastIndex = 0;
@@ -143,7 +145,7 @@ Regex_Find.prototype = {
   },
   
   
-  dummyFindRun: function(){
+  dummyFindRun: function(pattern, searchRange, startPoint, endPoint){
     var rangefindComp = Components.classesByID["{471f4944-1dd2-11b2-87ac-90be0a51d609}"];
     var findService = rangefindComp.getService(Ci.nsIFind);
     findService.caseSensitive = this.mCaseSensitive;
