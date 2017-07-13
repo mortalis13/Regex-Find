@@ -1,13 +1,16 @@
 
-const {classes: Cc, interfaces: Ci, utils: Cu}=Components;
-
 var EXPORTED_SYMBOLS = ['util'];
+
+const {classes: Cc, interfaces: Ci, utils: Cu}=Components;
 
 var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
 var gWindow = wm.getMostRecentWindow("navigator:browser");
 var console = gWindow.console;
 
 var util = {
+  
+  inputTags: ["textarea", "input"],
+  
   
   dumpRangeObject: function(range){
     if(range){
@@ -67,6 +70,11 @@ var util = {
   isElement: function(node){
     if(node.nodeType != Ci.nsIDOMNode.ELEMENT_NODE) return false;
     return true;
+  },
+  
+  get inIDOMUtils() {
+    var inIDOMUtils = Cc["@mozilla.org/inspector/dom-utils;1"].getService(Ci.inIDOMUtils);
+    return inIDOMUtils;
   },
   
 }

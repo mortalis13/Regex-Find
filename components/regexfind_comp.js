@@ -6,11 +6,6 @@ Cu.import("chrome://regexfind/content/util.js");
 Cu.import("chrome://regexfind/content/text-extractor.js");
 
 
-var inputTags=["textarea"];
-
-var inIDOMUtils = Cc["@mozilla.org/inspector/dom-utils;1"].getService(Ci.inIDOMUtils);
-
-
 function Regex_Find() {}
 
 Regex_Find.prototype = {
@@ -29,6 +24,7 @@ Regex_Find.prototype = {
   
   mLastIndex: 0,
   mTextExtractor: null,
+  
   
   Find: function(pattern, searchRange, startPoint, endPoint) {
     this.getBrowserEnv();
@@ -63,90 +59,10 @@ Regex_Find.prototype = {
     
       var resultRange = searchRange.cloneRange();
       var contentWindow = this.gWindow.gBrowser.contentWindow;
-      
-      if(!this.gFindBar.regexInitialized || !this.mTextExtractor){
-        this.mTextExtractor = new TextExtractor();
-        this.mTextExtractor.init(contentWindow.document, null);
-        this.gFindBar.regexInitialized = true;
-      }
-      
-      var text = this.mTextExtractor.mTextContent;
-      var regexResult = rx.exec(text);
-      var index = null, length = null;
-      
-      if (this.mFindBackwards) {
-        var prevFound = false;
-        while(!prevFound){
-          if(regexResult){
-            index = regexResult.index;
-            length = regexResult[0].length;
-            this.mLastIndex = rx.lastIndex;
-          }
-          
-          regexResult = rx.exec(text);
-          if(rx.lastIndex == currentLastIndex){
-            prevFound = true;
-          }
-        }
-      }
-      else{
-        if(regexResult){
-          index = regexResult.index;
-          length = regexResult[0].length;
-        }
-        
-        this.mLastIndex = rx.lastIndex;
-      }
-      
-      resultRange = this.mTextExtractor.getTextRange(index, length);
-      if(resultRange){
-        var startContainer = resultRange.startContainer;
-        var endContainer = resultRange.endContainer;
-        var startOffset = resultRange.startOffset;
-        var endOffset = resultRange.endOffset;
-        
-        startContainer = this.normalizeContainer(startContainer);
-        endContainer = this.normalizeContainer(endContainer);
-        
-        resultRange.setStart(startContainer, startOffset);
-        resultRange.setEnd(endContainer, endOffset);
-      }
-      
-      return resultRange;
-    }
-    catch(e) {
-      // util.log(e);
-    }
-    
-    this.mLastIndex = 0;
-    
-    util.log('ret null');
-    return null;
-  },
-  
-  
-  find_regex_global: function(pattern, searchRange, startPoint, endPoint) {
-    var flags = "gm";
-    if (!this.mCaseSensitive) flags+="i";
-    if (this.mEntireWord) pattern = '\\b' + pattern + '\\b';
-    
-    try{
-      var rx = new RegExp(pattern, flags);
-      rx.lastIndex = this.mLastIndex;
-      var currentLastIndex = rx.lastIndex;
-    
-      var resultRange = searchRange.cloneRange();
-      if (startPoint) {
-        if (this.mFindBackwards)
-          resultRange.setEnd(startPoint.startContainer, startPoint.startOffset);
-        else
-          resultRange.setStart(startPoint.endContainer, startPoint.endOffset);
-      }
-      
-      var contentWindow = this.gWindow.gBrowser.contentWindow;
       this.mTextExtractor = this.gFindBar.textExtractor;
       
       if(!this.gFindBar.regexInitialized){
+        util.log('Initializing TextExtractor');
         this.mTextExtractor = new TextExtractor();
         this.mTextExtractor.init(contentWindow.document, null);
         this.gFindBar.regexInitialized = true;
@@ -181,13 +97,19 @@ Regex_Find.prototype = {
         this.mLastIndex = rx.lastIndex;
       }
       
+      // run built-in Find() to prepare some search values for correct selection in textarea/inputs
+      this.dummyFindRun();
+      
       resultRange = this.mTextExtractor.getTextRange(index, length);
       return resultRange;
     }
-    catch(e) {}
+    catch(e) {
+      // util.log(e);
+    }
     
     this.mLastIndex = 0;
     
+    util.log('ret null');
     return null;
   },
   
@@ -221,24 +143,13 @@ Regex_Find.prototype = {
   },
   
   
-  // ----------------- utils -----------------
-  
-  normalizeContainer: function(node){
-    var resultNode = node;
-    var parent = node.parentElement;
-    
-    if(inputTags.indexOf(util.getTag(parent)) != -1){
-      var anonymousChildren = inIDOMUtils.getChildrenForNode(parent, true);
-      for(var i in anonymousChildren){
-        var ch = anonymousChildren[i];
-        if(util.isElement(ch) && ch.classList.contains('anonymous-div')){
-          resultNode = ch.childNodes[0];
-          break;
-        }
-      }
-    }
-    
-    return resultNode;
+  dummyFindRun: function(){
+    var rangefindComp = Components.classesByID["{471f4944-1dd2-11b2-87ac-90be0a51d609}"];
+    var findService = rangefindComp.getService(Ci.nsIFind);
+    findService.caseSensitive = this.mCaseSensitive;
+    findService.findBackwards = this.mFindBackwards;
+    findService.entireWord = this.mEntireWord;
+    var resultRange = findService.Find(false, searchRange, startPoint, endPoint);
   },
   
 }
