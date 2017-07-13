@@ -236,4 +236,19 @@ TextExtractor.prototype = {
     return range;
   },
   
+  
+  findTextOffset: function(startContainer, startOffset) {
+    if(startContainer){
+      for(var i in this.mNodeContent){
+        var nodeInfo = this.mNodeContent[i];
+        if(nodeInfo.mNode == startContainer){
+          var textOffset = nodeInfo.mDocumentOffset + startOffset;
+          return textOffset;
+        }
+      }
+    }
+    
+    return 0;
+  },
+  
 }

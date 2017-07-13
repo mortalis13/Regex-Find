@@ -12,6 +12,8 @@ var util = {
   inputTags: ["textarea", "input"],
   
   
+  // ------------- Debug Utils -------------
+  
   dumpRangeObject: function(range){
     if(range){
       try{
@@ -38,7 +40,10 @@ var util = {
       console.log('__Nodes__');
       for(var i=0; i<nodes.length; ++i){
         var node = nodes[i];
-        this.log('mDocumentOffset:', node.mDocumentOffset, 'mLength:', node.mLength, 'mNode:', node.mNode, 'mNodeOffset:', node.mNodeOffset);
+        var nodeContent = node.mNode.textContent;
+        nodeContent = nodeContent.replace(/\s/g, ' ');
+        // this.log('mDocumentOffset:', node.mDocumentOffset, 'mLength:', node.mLength, 'mNode:' + nodeContent, 'mNodeOffset:', node.mNodeOffset);
+        this.log('node_id: ' + i + '\nmDocumentOffset: ' + node.mDocumentOffset + '\nmLength: ' + node.mLength + '\nmNode: "' + nodeContent + '"\nmNodeOffset: ' + node.mNodeOffset + '\n');
       }
       console.log('_END_Nodes_');
     }
@@ -58,6 +63,9 @@ var util = {
   logu: function(msg){
     this.log(msg, Math.random().toFixed(5));
   },
+  
+  
+  // ------------- DOM Utils -------------
   
   getTag: function(node){
     if(!this.isElement(node)) return null;

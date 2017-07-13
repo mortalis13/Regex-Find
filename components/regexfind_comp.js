@@ -52,13 +52,7 @@ Regex_Find.prototype = {
     if (!this.mCaseSensitive) flags+="i";
     if (this.mEntireWord) pattern = '\\b' + pattern + '\\b';
     
-    // 
-    
     try{
-      var rx = new RegExp(pattern, flags);
-      rx.lastIndex = this.mLastIndex;
-      var currentLastIndex = rx.lastIndex;
-    
       var resultRange = searchRange.cloneRange();
       var contentWindow = this.gWindow.gBrowser.contentWindow;
       this.mTextExtractor = this.gFindBar.textExtractor;
@@ -69,7 +63,17 @@ Regex_Find.prototype = {
         this.mTextExtractor.init(contentWindow.document, null);
         this.gFindBar.regexInitialized = true;
         this.gFindBar.textExtractor = this.mTextExtractor;
+
+        util.dumpNodes(this.mTextExtractor.mNodeContent);
       }
+      
+      var startOffset = startPoint.startOffset;
+      if(this.mFindBackwards) startOffset++;
+      this.mLastIndex = this.mTextExtractor.findTextOffset(startPoint.startContainer, startOffset);
+      
+      var rx = new RegExp(pattern, flags);
+      rx.lastIndex = this.mLastIndex;
+      var currentLastIndex = rx.lastIndex;
       
       var text = this.mTextExtractor.mTextContent;
       var regexResult = rx.exec(text);
@@ -77,15 +81,20 @@ Regex_Find.prototype = {
       
       if (this.mFindBackwards) {
         var prevFound = false;
+        var rxEndReached = false;
+        
         while(!prevFound){
           if(regexResult){
             index = regexResult.index;
             length = regexResult[0].length;
             this.mLastIndex = rx.lastIndex;
           }
+          else{
+            rxEndReached = true;
+          }
           
           regexResult = rx.exec(text);
-          if(rx.lastIndex == currentLastIndex){
+          if( rxEndReached && (rx.lastIndex >= currentLastIndex || (rx.lastIndex == 0 && index)) ){
             prevFound = true;
           }
         }
