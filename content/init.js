@@ -1,26 +1,25 @@
 
-// const {classes: Cc, interfaces: Ci, utils: Cu}=Components;
+// const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
 Cu.import("resource://gre/modules/Services.jsm");
 
 var prefs = {'key_findRegexPrevState': 'extensions.regexfind.key_findRegexPrevState'};
-var prefObserver={
+var prefObserver = {
   observe: function(aSubject, aTopic, aData){
     updateKeysetPref();
   }
 };
 
-var tabsProgressListener={
+var tabsProgressListener = {
   onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation, aFlags){
     if(gFindBar){
       console.log('Resetting Regex search');
       
-      // clear list of lines/nodes when reloading page/changing url
+      // clear list of cached objects when reloading page/changing url
       gFindBar.innerDocuments = [];
-      gFindBar.regexInitialized = false;
       
-      gFindBar._foundMatches.hidden=true
-      gFindBar._foundMatches.value=""
-      gFindBar._findStatusDesc.textContent=""
+      gFindBar._foundMatches.hidden = true;
+      gFindBar._foundMatches.value = "";
+      gFindBar._findStatusDesc.textContent = "";
     }
     else{
       console.log('gFindBar is empty');
@@ -68,21 +67,21 @@ function keyFindPrev(){
 }
 
 function pref(name,value){                            //get/set prefs
-  if(value===undefined){
+  if(value === undefined){
     switch(Services.prefs.getPrefType(name)){
-      case 0:return null
-      case 32:return Services.prefs.getCharPref(name)
-      case 64:return Services.prefs.getIntPref(name)
-      case 128:return Services.prefs.getBoolPref(name)
+      case 0: return null;
+      case 32: return Services.prefs.getCharPref(name);
+      case 64: return Services.prefs.getIntPref(name);
+      case 128: return Services.prefs.getBoolPref(name);
     }
   }
   
-  if(value==="") Services.prefs.clearUserPref(name)
+  if(value === "") Services.prefs.clearUserPref(name);
   else{
     switch(typeof value){
-      case "boolean":Services.prefs.setBoolPref(name,value);return
-      case "number":Services.prefs.setIntPref(name,value);return
-      default:Services.prefs.setCharPref(name,value)
+      case "boolean": Services.prefs.setBoolPref(name,value); return;
+      case "number": Services.prefs.setIntPref(name,value); return;
+      default: Services.prefs.setCharPref(name,value);
     }
   }
 }

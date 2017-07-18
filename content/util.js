@@ -85,6 +85,37 @@ var util = {
     return true;
   },
   
+  isTextNode: function(node){
+    if(node.nodeType != Ci.nsIDOMNode.TEXT_NODE) return false;
+    return true;
+  },
+  
+  isCDataNode: function(node){
+    if(node.nodeType != Ci.nsIDOMNode.CDATA_SECTION_NODE) return false;
+    return true;
+  },
+  
+  isInput: function(node){
+    var tagName = this.getTag(node);
+    if(this.inputTags.indexOf(tagName) == -1) return false;
+    return true;
+  },
+  
+  isInvisible: function(node, document){
+    var view = document.defaultView;
+    
+    if (this.isElement(node) && view) {
+      var style = view.getComputedStyle(node, '');
+      var display = style.getPropertyValue("display");
+      
+      if (display == "none") {
+        return true;
+      }
+    }
+    
+    return false;
+  },
+  
   get inIDOMUtils() {
     var inIDOMUtils = Cc["@mozilla.org/inspector/dom-utils;1"].getService(Ci.inIDOMUtils);
     return inIDOMUtils;

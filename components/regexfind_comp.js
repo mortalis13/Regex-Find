@@ -22,14 +22,28 @@ Regex_Find.prototype = {
   gWindow: null,
   gFindBar: null,
   
+  // saved lastIndex for RegExp object
   mLastIndex: 0,
+  // TextExtractor object which contains all nodes for current document (main or iframe) and full extracted text
   mTextExtractor: null,
   
+  // previous found result length, used to get correct start offset for the next search
   mPrevResultLength: 1,
   
+  // flag telling if searching backwards we reach the position before the first found occurrence (corresponds to null range)
   mTopWrapReached: false,
   
   
+  // The main Find() method is overriden from the nsIFind XPCOM interface.
+  // this method is called from the outside by the Firefox system.
+  // the number of calls and parameters depend on number of inner documents in the current HTML document (main document, iframes)
+  //   and on total results count 
+  //   (so when there's 10 results found for some search pattern then in a HTML non-iframe document this method will be called 1+10+1 times,
+  //   the first time to return the range that should be selected as currently found text,
+  //   10 times to calculate total count, and 1 more time to return null meaning the end of search (in this case))
+  //   [[ this is a supposed behaviour based on logic and extensive debugging, as I didn't find any documentation on this except comment in source C++ code ]]
+  
+  // Override
   Find: function(pattern, searchRange, startPoint, endPoint) {
     this.getBrowserEnv();
     var regexSearch = this.gFindBar.regexSearch;
@@ -53,7 +67,7 @@ Regex_Find.prototype = {
   
   find_regex: function(pattern, searchRange, startPoint, endPoint) {
     var flags = "gm";
-    if (!this.mCaseSensitive) flags+="i";
+    if (!this.mCaseSensitive) flags += "i";
     if (this.mEntireWord) pattern = '\\b' + pattern + '\\b';
     
     try{
@@ -66,10 +80,11 @@ Regex_Find.prototype = {
           resultRange.setStart(startPoint.endContainer, startPoint.endOffset);
       }
       
+      // get content document depending on container that is sent by the inner search system (maybe main HTML document or inner iframe-like document)
       var searchDocument = resultRange.startContainer.ownerDocument;
-      
       var documentInitialized = false;
       
+      // get correct saved document lest we reinitialize the same content which is already cached
       var innerDocuments = this.gFindBar.innerDocuments;
       for(var i in innerDocuments){
         var innerDocument = innerDocuments[i];
@@ -80,9 +95,9 @@ Regex_Find.prototype = {
         }
       }
       
+      // if document is not cached yet then parse its nodes to save for later use and save this info in the current findbar instance (which is unique for each window/tab)
       if(!documentInitialized){
-        util.log('Initializing TextExtractor: ' + searchDocument.URL);
-        
+        // util.log('Initializing TextExtractor: ' + searchDocument.URL);
         var innerDocument = {};
         var textExtractor = new TextExtractor();
         textExtractor.init(searchDocument, null);
@@ -94,23 +109,34 @@ Regex_Find.prototype = {
         this.gFindBar.innerDocuments.push(innerDocument);
       }
       
+      var text = this.mTextExtractor.mTextContent;
+      
+      // get the index/cursor position from which to start to search next result (this allows to search from the clicked position)
       var startOffset = startPoint.startOffset;
       if(this.mFindBackwards) startOffset += this.mPrevResultLength;
       this.mLastIndex = this.mTextExtractor.findTextOffset(startPoint.startContainer, startOffset);
       
       var rx = new RegExp(pattern, flags);
       rx.lastIndex = this.mLastIndex;
+      
+      // lastIndex before the next search, is used for correct backwards searching
       var currentLastIndex = rx.lastIndex;
       
-      var text = this.mTextExtractor.mTextContent;
+      // main search
       var regexResult = rx.exec(text);
-      var index = null, length = null;
       
+      var index = null;
+      var length = null;
       var backwardsSingleResult = false;
+      
+      // backwards search
       if (this.mFindBackwards) {
         var prevFound = false;
         var regexEndReached = false;
         
+        // on each iteration get the previous result
+        // if we reach the currently found result then that previous one will be returned
+        // this loop goes till the end of the text (RegExp cannot search backwards) and find the current-1 occurrence
         while(!prevFound){
           if(regexResult){
             index = regexResult.index;
@@ -122,9 +148,17 @@ Regex_Find.prototype = {
           }
           
           regexResult = rx.exec(text);
-          if( regexResult && regexEndReached && (rx.lastIndex >= currentLastIndex || rx.lastIndex == 0 && index) ){
-            if(!index){
+          
+          // if RegExp end was reached once (regexResult == null) and its lastIndex equals that of the currently selected result
+          // (it may also be more than currentLastIndex if user changes current selection with mouse)
+          // or if lastIndex is 0 (result is null) but we have index (and length) saved previously
+          // (this situation occurs when current selection if after the last item and we search backwards)
+          if( regexEndReached && (rx.lastIndex >= currentLastIndex || rx.lastIndex == 0 && index) ){
+            // this is when we search backwards a single found result
+            // (in the first [if] of this loop regexResult is null so we'll have null range if we don't assign index of the single result)
+            if(regexResult && !index){
               backwardsSingleResult = true;
+              
               index = regexResult.index;
               length = regexResult[0].length;
               this.mLastIndex = rx.lastIndex;
@@ -135,6 +169,7 @@ Regex_Find.prototype = {
         }
       }
       else{
+        // forward search
         if(regexResult){
           index = regexResult.index;
           length = regexResult[0].length;
@@ -146,13 +181,17 @@ Regex_Find.prototype = {
       // run built-in Find() to prepare some (unknown yet) search values for correct selection in textarea/inputs
       this.dummyFindRun(pattern, searchRange, startPoint, endPoint);
       
+      // save current length to set correct startOffset for the next search (min 1)
       if(length) this.mPrevResultLength = length;
       
+      // the range we return to the searching firefox system (correct selection and results number depends on the content of this range)
       resultRange = this.mTextExtractor.getTextRange(index, length);
       
+      // checking if the top was reached (if the search goes from the first to last occurrence)
+      // used to show correct message with the search result count
       if(this.mFindBackwards && (index > currentLastIndex || backwardsSingleResult)){
         if(!this.mTopWrapReached){
-          util.log('Returning null resultRange for findBackwards!');
+          // util.log('Returning null resultRange for findBackwards!');
           
           resultRange = null;
           this.mTopWrapReached = true;
@@ -165,117 +204,17 @@ Regex_Find.prototype = {
       return resultRange;
     }
     catch(e) {
-      util.error(e);
+      // util.error(e);
     }
     
-    this.mLastIndex = 0;
+    // reaches here if there's an exception
+    // generally exceptions should occur when the RegExp expression is incorrect
+    // (this also happens when user types special regex characters with \)
     
-    util.log('ret null');
+    // util.log('ret null');
+    this.mLastIndex = 0;
     return null;
   },
-  
-  
-  // find_regex: function(pattern, searchRange, startPoint, endPoint) {
-  //   var flags = "gm";
-  //   if (!this.mCaseSensitive) flags+="i";
-  //   if (this.mEntireWord) pattern = '\\b' + pattern + '\\b';
-    
-  //   try{
-  //     var resultRange = searchRange.cloneRange();
-      
-  //     if (startPoint) {
-  //       if (this.mFindBackwards)
-  //         resultRange.setEnd(startPoint.startContainer, startPoint.startOffset);
-  //       else
-  //         resultRange.setStart(startPoint.endContainer, startPoint.endOffset);
-  //     }
-      
-  //     this.mTextExtractor = this.gFindBar.textExtractor;
-      
-  //     // if(!this.gFindBar.regexInitialized){
-  //       // util.log('Initializing TextExtractor');
-        
-  //       var contentWindow = this.gWindow.gBrowser.contentWindow;
-  //       var searchDocument = resultRange.startContainer.ownerDocument;
-        
-  //       this.mTextExtractor = new TextExtractor();
-  //       // this.mTextExtractor.init(contentWindow.document, null);
-  //       this.mTextExtractor.init(searchDocument, null);
-  //       this.gFindBar.regexInitialized = true;
-  //       this.gFindBar.textExtractor = this.mTextExtractor;
-
-  //       // util.dumpNodes(this.mTextExtractor.mNodeContent);
-  //     // }
-      
-  //     var startOffset = startPoint.startOffset;
-  //     if(this.mFindBackwards) startOffset++;
-  //     this.mLastIndex = this.mTextExtractor.findTextOffset(startPoint.startContainer, startOffset);
-      
-  //     var rx = new RegExp(pattern, flags);
-  //     rx.lastIndex = this.mLastIndex;
-  //     var currentLastIndex = rx.lastIndex;
-      
-  //     var text = this.mTextExtractor.mTextContent;
-  //     var regexResult = rx.exec(text);
-  //     var index = null, length = null;
-      
-  //     if (this.mFindBackwards) {
-  //       var prevFound = false;
-  //       var regexEndReached = false;
-        
-  //       while(!prevFound){
-  //         if(regexResult){
-  //           index = regexResult.index;
-  //           length = regexResult[0].length;
-  //           this.mLastIndex = rx.lastIndex;
-  //         }
-  //         else{
-  //           regexEndReached = true;
-  //         }
-          
-  //         regexResult = rx.exec(text);
-  //         if( regexEndReached && (rx.lastIndex >= currentLastIndex || (rx.lastIndex == 0 && index)) ){
-  //           prevFound = true;
-  //         }
-  //       }
-  //     }
-  //     else{
-  //       if(regexResult){
-  //         index = regexResult.index;
-  //         length = regexResult[0].length;
-  //       }
-        
-  //       this.mLastIndex = rx.lastIndex;
-  //     }
-      
-  //     // run built-in Find() to prepare some search values for correct selection in textarea/inputs
-  //     this.dummyFindRun(pattern, searchRange, startPoint, endPoint);
-      
-  //     resultRange = this.mTextExtractor.getTextRange(index, length);
-      
-  //     if(this.mFindBackwards && index > currentLastIndex){
-  //       if(!this.mTopWrapReached){
-  //         util.log('returning null resultRange for findBackwards');
-          
-  //         resultRange = null;
-  //         this.mTopWrapReached = true;
-  //       }
-  //       else{
-  //         this.mTopWrapReached = false;
-  //       }
-  //     }
-      
-  //     return resultRange;
-  //   }
-  //   catch(e) {
-  //     util.log(e);
-  //   }
-    
-  //   this.mLastIndex = 0;
-    
-  //   util.log('ret null');
-  //   return null;
-  // },
   
   
   getBrowserEnv: function(){

@@ -34,6 +34,8 @@ TextExtractor.prototype = {
     var startOffset = 0;
     var endOffset = 0;
     
+    // gets currentNode and endNode to determine limits of search
+    // used in the next [while] loop
     if (!range) {
       if (document instanceof Ci.nsIDOMHTMLDocument)
         endNode = document.body;
@@ -59,7 +61,7 @@ TextExtractor.prototype = {
       endOffset = range.endOffset;
       type = endNode.nodeType;
 
-      if (type == Ci.nsIDOMNode.ELEMENT_NODE) {
+      if (util.isElement(endNode)) {
         children = endNode.childNodes;
         endNode = children[endOffset-1];
       }
@@ -68,11 +70,11 @@ TextExtractor.prototype = {
       startOffset = range.startOffset;
       type = currentNode.nodeType;
       
-      if ((type == Ci.nsIDOMNode.ELEMENT_NODE) && (startOffset>0)) {
+      if (util.isElement(currentNode) && startOffset > 0) {
         children = currentNode.childNodes;
         var length = children.length;
         
-        if (startOffset<length)
+        if (startOffset < length)
           currentNode = children[startOffset];
         else if (length > 0)
           currentNode = this.walkPastTree(currentNode, endNode);
@@ -81,13 +83,13 @@ TextExtractor.prototype = {
       }
     }
 
-    var view = document.defaultView;
-    
+    // go through all elements/nodes, merge text contents into one string, save all nodes with start text offsets
     while (currentNode) {
       var nodeType = currentNode.nodeType;
       
+      // text nodes inside elements
       var nextNode;
-      if ( (nodeType == Ci.nsIDOMNode.TEXT_NODE) || (nodeType == Ci.nsIDOMNode.CDATA_SECTION_NODE) ) {
+      if (util.isTextNode(currentNode) || util.isCDataNode(currentNode)) {
         if (currentNode != endNode)
           this.addTextNode(currentNode, startOffset);
         else
@@ -99,23 +101,22 @@ TextExtractor.prototype = {
         
         continue;
       }
-      
       startOffset = 0;
-      if ((nodeType == Ci.nsIDOMNode.ELEMENT_NODE) && view) {
-        var style = view.getComputedStyle(currentNode, '');
-        var display = style.getPropertyValue("display");
-        
-        if (display=="none") {
-          nextNode = this.walkPastTree(currentNode, endNode);
-          currentNode = nextNode;
-          continue;
-        }
+      
+      // element nodes
+      if(util.isInvisible(currentNode, document)){
+        nextNode = this.walkPastTree(currentNode, endNode);
+        currentNode = nextNode;
+        continue;
       }
       
+      // search for anonymous nodes for input elements (textarea, input)
+      // then get their text nodes (these should be returned in the resultRange inside Find() 
+      //   method to handle their selection inside editable elements properly)
       if (util.isElement(currentNode)) {
-        var tagName = util.getTag(currentNode);
-        if(util.inputTags.indexOf(tagName) != -1){
+        if(util.isInput(currentNode)){
           var anonymousChildren = util.inIDOMUtils.getChildrenForNode(currentNode, true);
+          
           for(var i in anonymousChildren){
             var ch = anonymousChildren[i];
             if(util.isElement(ch) && ch.classList.contains('anonymous-div')){
@@ -134,6 +135,8 @@ TextExtractor.prototype = {
   },
   
   
+  // add text content of the node
+  // and save its data to the array of nodes
   addTextNode: function(node, offset, length) {
     var text;
     if (length)
@@ -145,10 +148,11 @@ TextExtractor.prototype = {
     nodeInfo.mLength = text.length;
 
     if (nodeInfo.mLength > 0) {
+      
       nodeInfo.mDocumentOffset = this.mTextContent.length;
       nodeInfo.mNodeOffset = offset;
       nodeInfo.mNode = node;
-
+      
       this.mTextContent += text;
       
       this.mNodeContent.push(nodeInfo);
@@ -156,6 +160,7 @@ TextExtractor.prototype = {
   },
 
 
+  // recursive methods to get next nodes in the tree
   walkPastTree: function(current, limit) {
     var next;
 
@@ -173,7 +178,7 @@ TextExtractor.prototype = {
     
     return next;
   },
-
+  
   walkIntoTree: function(current, limit) {
     var next;
 
@@ -185,6 +190,7 @@ TextExtractor.prototype = {
   },
   
   
+  // get node index from mNodeContent array
   seekOffsetPosition: function(offset, start, end, seekEnd) {
     if (start+1 >= end)
       return start;
@@ -214,7 +220,9 @@ TextExtractor.prototype = {
     
     return this.seekOffsetPosition(offset, start, end, seekEnd);
   },
-
+  
+  
+  // get range by found text offset and length inside the merged global text (mTextContent)
   getTextRange: function(offset, length) {
     if(offset === null || !length) return null;
     
@@ -237,10 +245,13 @@ TextExtractor.prototype = {
   },
   
   
+  // get text offset in mTextContent by the document container (node) and offset inside it
+  // reverse to the getTextRange() method
   findTextOffset: function(startContainer, startOffset) {
     if(startContainer){
       for(var i in this.mNodeContent){
         var nodeInfo = this.mNodeContent[i];
+        
         if(nodeInfo.mNode == startContainer){
           var textOffset = nodeInfo.mDocumentOffset + startOffset;
           return textOffset;
