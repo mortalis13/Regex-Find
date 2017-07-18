@@ -25,6 +25,10 @@ Regex_Find.prototype = {
   mLastIndex: 0,
   mTextExtractor: null,
   
+  mPrevResultLength: 1,
+  
+  mTopWrapReached: false,
+  
   
   Find: function(pattern, searchRange, startPoint, endPoint) {
     this.getBrowserEnv();
@@ -54,21 +58,44 @@ Regex_Find.prototype = {
     
     try{
       var resultRange = searchRange.cloneRange();
-      var contentWindow = this.gWindow.gBrowser.contentWindow;
-      this.mTextExtractor = this.gFindBar.textExtractor;
       
-      if(!this.gFindBar.regexInitialized){
-        util.log('Initializing TextExtractor');
-        this.mTextExtractor = new TextExtractor();
-        this.mTextExtractor.init(contentWindow.document, null);
-        this.gFindBar.regexInitialized = true;
-        this.gFindBar.textExtractor = this.mTextExtractor;
-
-        util.dumpNodes(this.mTextExtractor.mNodeContent);
+      if (startPoint) {
+        if (this.mFindBackwards)
+          resultRange.setEnd(startPoint.startContainer, startPoint.startOffset);
+        else
+          resultRange.setStart(startPoint.endContainer, startPoint.endOffset);
+      }
+      
+      var searchDocument = resultRange.startContainer.ownerDocument;
+      
+      var documentInitialized = false;
+      
+      var innerDocuments = this.gFindBar.innerDocuments;
+      for(var i in innerDocuments){
+        var innerDocument = innerDocuments[i];
+        if(innerDocument.document == searchDocument){
+          this.mTextExtractor = innerDocument.textExtractor;
+          documentInitialized = true;
+          break;
+        }
+      }
+      
+      if(!documentInitialized){
+        util.log('Initializing TextExtractor: ' + searchDocument.URL);
+        
+        var innerDocument = {};
+        var textExtractor = new TextExtractor();
+        textExtractor.init(searchDocument, null);
+        
+        innerDocument.document = searchDocument;
+        innerDocument.textExtractor = textExtractor;
+        this.mTextExtractor = innerDocument.textExtractor;
+        
+        this.gFindBar.innerDocuments.push(innerDocument);
       }
       
       var startOffset = startPoint.startOffset;
-      if(this.mFindBackwards) startOffset++;
+      if(this.mFindBackwards) startOffset += this.mPrevResultLength;
       this.mLastIndex = this.mTextExtractor.findTextOffset(startPoint.startContainer, startOffset);
       
       var rx = new RegExp(pattern, flags);
@@ -79,9 +106,10 @@ Regex_Find.prototype = {
       var regexResult = rx.exec(text);
       var index = null, length = null;
       
+      var backwardsSingleResult = false;
       if (this.mFindBackwards) {
         var prevFound = false;
-        var rxEndReached = false;
+        var regexEndReached = false;
         
         while(!prevFound){
           if(regexResult){
@@ -90,11 +118,18 @@ Regex_Find.prototype = {
             this.mLastIndex = rx.lastIndex;
           }
           else{
-            rxEndReached = true;
+            regexEndReached = true;
           }
           
           regexResult = rx.exec(text);
-          if( rxEndReached && (rx.lastIndex >= currentLastIndex || (rx.lastIndex == 0 && index)) ){
+          if( regexResult && regexEndReached && (rx.lastIndex >= currentLastIndex || rx.lastIndex == 0 && index) ){
+            if(!index){
+              backwardsSingleResult = true;
+              index = regexResult.index;
+              length = regexResult[0].length;
+              this.mLastIndex = rx.lastIndex;
+            }
+            
             prevFound = true;
           }
         }
@@ -108,14 +143,29 @@ Regex_Find.prototype = {
         this.mLastIndex = rx.lastIndex;
       }
       
-      // run built-in Find() to prepare some search values for correct selection in textarea/inputs
+      // run built-in Find() to prepare some (unknown yet) search values for correct selection in textarea/inputs
       this.dummyFindRun(pattern, searchRange, startPoint, endPoint);
       
+      if(length) this.mPrevResultLength = length;
+      
       resultRange = this.mTextExtractor.getTextRange(index, length);
+      
+      if(this.mFindBackwards && (index > currentLastIndex || backwardsSingleResult)){
+        if(!this.mTopWrapReached){
+          util.log('Returning null resultRange for findBackwards!');
+          
+          resultRange = null;
+          this.mTopWrapReached = true;
+        }
+        else{
+          this.mTopWrapReached = false;
+        }
+      }
+      
       return resultRange;
     }
     catch(e) {
-      util.log(e);
+      util.error(e);
     }
     
     this.mLastIndex = 0;
@@ -123,6 +173,109 @@ Regex_Find.prototype = {
     util.log('ret null');
     return null;
   },
+  
+  
+  // find_regex: function(pattern, searchRange, startPoint, endPoint) {
+  //   var flags = "gm";
+  //   if (!this.mCaseSensitive) flags+="i";
+  //   if (this.mEntireWord) pattern = '\\b' + pattern + '\\b';
+    
+  //   try{
+  //     var resultRange = searchRange.cloneRange();
+      
+  //     if (startPoint) {
+  //       if (this.mFindBackwards)
+  //         resultRange.setEnd(startPoint.startContainer, startPoint.startOffset);
+  //       else
+  //         resultRange.setStart(startPoint.endContainer, startPoint.endOffset);
+  //     }
+      
+  //     this.mTextExtractor = this.gFindBar.textExtractor;
+      
+  //     // if(!this.gFindBar.regexInitialized){
+  //       // util.log('Initializing TextExtractor');
+        
+  //       var contentWindow = this.gWindow.gBrowser.contentWindow;
+  //       var searchDocument = resultRange.startContainer.ownerDocument;
+        
+  //       this.mTextExtractor = new TextExtractor();
+  //       // this.mTextExtractor.init(contentWindow.document, null);
+  //       this.mTextExtractor.init(searchDocument, null);
+  //       this.gFindBar.regexInitialized = true;
+  //       this.gFindBar.textExtractor = this.mTextExtractor;
+
+  //       // util.dumpNodes(this.mTextExtractor.mNodeContent);
+  //     // }
+      
+  //     var startOffset = startPoint.startOffset;
+  //     if(this.mFindBackwards) startOffset++;
+  //     this.mLastIndex = this.mTextExtractor.findTextOffset(startPoint.startContainer, startOffset);
+      
+  //     var rx = new RegExp(pattern, flags);
+  //     rx.lastIndex = this.mLastIndex;
+  //     var currentLastIndex = rx.lastIndex;
+      
+  //     var text = this.mTextExtractor.mTextContent;
+  //     var regexResult = rx.exec(text);
+  //     var index = null, length = null;
+      
+  //     if (this.mFindBackwards) {
+  //       var prevFound = false;
+  //       var regexEndReached = false;
+        
+  //       while(!prevFound){
+  //         if(regexResult){
+  //           index = regexResult.index;
+  //           length = regexResult[0].length;
+  //           this.mLastIndex = rx.lastIndex;
+  //         }
+  //         else{
+  //           regexEndReached = true;
+  //         }
+          
+  //         regexResult = rx.exec(text);
+  //         if( regexEndReached && (rx.lastIndex >= currentLastIndex || (rx.lastIndex == 0 && index)) ){
+  //           prevFound = true;
+  //         }
+  //       }
+  //     }
+  //     else{
+  //       if(regexResult){
+  //         index = regexResult.index;
+  //         length = regexResult[0].length;
+  //       }
+        
+  //       this.mLastIndex = rx.lastIndex;
+  //     }
+      
+  //     // run built-in Find() to prepare some search values for correct selection in textarea/inputs
+  //     this.dummyFindRun(pattern, searchRange, startPoint, endPoint);
+      
+  //     resultRange = this.mTextExtractor.getTextRange(index, length);
+      
+  //     if(this.mFindBackwards && index > currentLastIndex){
+  //       if(!this.mTopWrapReached){
+  //         util.log('returning null resultRange for findBackwards');
+          
+  //         resultRange = null;
+  //         this.mTopWrapReached = true;
+  //       }
+  //       else{
+  //         this.mTopWrapReached = false;
+  //       }
+  //     }
+      
+  //     return resultRange;
+  //   }
+  //   catch(e) {
+  //     util.log(e);
+  //   }
+    
+  //   this.mLastIndex = 0;
+    
+  //   util.log('ret null');
+  //   return null;
+  // },
   
   
   getBrowserEnv: function(){
@@ -161,6 +314,7 @@ Regex_Find.prototype = {
     findService.findBackwards = this.mFindBackwards;
     findService.entireWord = this.mEntireWord;
     var resultRange = findService.Find(false, searchRange, startPoint, endPoint);
+    // var resultRange = findService.Find(pattern, searchRange, startPoint, endPoint);
   },
   
 }

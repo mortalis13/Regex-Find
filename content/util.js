@@ -53,10 +53,15 @@ var util = {
   },
   
   log: function(msg){
-    // var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
-    // var gWindow = wm.getMostRecentWindow("navigator:browser");
-    
     console.log.apply(this, arguments);
+  },
+  
+  warn: function(msg){
+    console.warn.apply(this, arguments);
+  },
+  
+  error: function(msg){
+    console.error.apply(this, arguments);
   },
   
   // log unique message (to split duplicated messages with different timestamps)

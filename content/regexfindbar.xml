@@ -71,6 +71,9 @@
       <field name="regexLastIndex">0</field>
       
       <field name="textExtractor">null</field>
+      
+      <field name="innerDocuments">null</field>
+      
 
       <field name="FOUND">0</field>
       <field name="NOT_FOUND">1</field>

@@ -12,8 +12,12 @@ var prefObserver={
 var tabsProgressListener={
   onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation, aFlags){
     if(gFindBar){
+      console.log('Resetting Regex search');
+      
       // clear list of lines/nodes when reloading page/changing url
-      gFindBar.lines = [];
+      gFindBar.innerDocuments = [];
+      gFindBar.regexInitialized = false;
+      
       gFindBar._foundMatches.hidden=true
       gFindBar._foundMatches.value=""
       gFindBar._findStatusDesc.textContent=""
@@ -59,6 +63,10 @@ function removeKeyset(){
   }
 }
 
+function keyFindPrev(){
+  gFindBar.onFindAgainCommand(true);
+}
+
 function pref(name,value){                            //get/set prefs
   if(value===undefined){
     switch(Services.prefs.getPrefType(name)){
@@ -68,6 +76,7 @@ function pref(name,value){                            //get/set prefs
       case 128:return Services.prefs.getBoolPref(name)
     }
   }
+  
   if(value==="") Services.prefs.clearUserPref(name)
   else{
     switch(typeof value){
@@ -79,11 +88,20 @@ function pref(name,value){                            //get/set prefs
 }
 
 function init(){
-  // updateKeysetPref();
-  // Services.prefs.addObserver(prefs["key_findRegexPrevState"],prefObserver,false);
+  updateKeysetPref();
+  Services.prefs.addObserver(prefs["key_findRegexPrevState"], prefObserver, false);
   
-  // console.log('addTabsProgressListener', gBrowser.addTabsProgressListener);
-  // gBrowser.addTabsProgressListener(tabsProgressListener);
+  if(gBrowser.addTabsProgressListener){
+    try{
+      gBrowser.addTabsProgressListener(tabsProgressListener);
+    }
+    catch(e){
+      console.error(e);
+      console.log('gBrowser.addTabsProgressListener', gBrowser.addTabsProgressListener);
+    }
+  }
+  else
+    console.log('no gBrowser.addTabsProgressListener');
 }
 
 init();
