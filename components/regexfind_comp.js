@@ -52,15 +52,7 @@ Regex_Find.prototype = {
       return this.find_regex(pattern, searchRange, startPoint, endPoint);
     }
     else{
-      var rangefindComp = Components.classesByID["{471f4944-1dd2-11b2-87ac-90be0a51d609}"];
-      var findService = rangefindComp.getService(Ci.nsIFind);
-      
-      findService.caseSensitive = this.mCaseSensitive;
-      findService.findBackwards = this.mFindBackwards;
-      findService.entireWord = this.mEntireWord;
-      
-      var resultRange = findService.Find(pattern, searchRange, startPoint, endPoint);
-      return resultRange;
+      return native_find(pattern, searchRange, startPoint, endPoint);
     }
   },
   
@@ -179,7 +171,7 @@ Regex_Find.prototype = {
       }
       
       // run built-in Find() to prepare some (unknown yet) search values for correct selection in textarea/inputs
-      this.dummyFindRun(pattern, searchRange, startPoint, endPoint);
+      this.native_find(false, searchRange, startPoint, endPoint);
       
       // save current length to set correct startOffset for the next search (min 1)
       if(length) this.mPrevResultLength = length;
@@ -246,14 +238,16 @@ Regex_Find.prototype = {
   },
   
   
-  dummyFindRun: function(pattern, searchRange, startPoint, endPoint){
+  native_find: function(pattern, searchRange, startPoint, endPoint){
     var rangefindComp = Components.classesByID["{471f4944-1dd2-11b2-87ac-90be0a51d609}"];
     var findService = rangefindComp.getService(Ci.nsIFind);
+    
     findService.caseSensitive = this.mCaseSensitive;
     findService.findBackwards = this.mFindBackwards;
     findService.entireWord = this.mEntireWord;
-    var resultRange = findService.Find(false, searchRange, startPoint, endPoint);
-    // var resultRange = findService.Find(pattern, searchRange, startPoint, endPoint);
+    
+    var resultRange = findService.Find(pattern, searchRange, startPoint, endPoint);
+    return resultRange;
   },
   
 }
