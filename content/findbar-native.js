@@ -14,13 +14,9 @@ var findbarNative = {
 
     // Only search on input if we don't have a last-failed string,
     // or if the current search string doesn't start with it.
-    // In entire-word mode we always attemp a find; since sequential matching
-    // is not guaranteed, the first character typed may not be a word (no
-    // match), but the with the second character it may well be a word,
-    // thus a match.
     if (!this._findFailedString ||
-        !val.startsWith(this._findFailedString) ||
-        this._entireWord) {
+        !val.startsWith(this._findFailedString))
+    {
       // Getting here means the user commanded a find op. Make sure any
       // initial prefilling is ignored if it hasn't happened yet.
       if (this._startFindDeferred) {
@@ -28,8 +24,11 @@ var findbarNative = {
         this._startFindDeferred = null;
       }
 
+      this._enableFindButtons(val);
+      if (this.getElement("highlight").checked)
+        this._setHighlightTimeout();
+
       this._updateCaseSensitivity(val);
-      this._setEntireWord();
 
       this.browser.finder.fastFind(val, this._findMode == this.FIND_LINKS,
                                    this._findMode != this.FIND_NORMAL);

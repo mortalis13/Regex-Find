@@ -53,15 +53,15 @@ var util = {
   },
   
   log: function(msg){
-    console.log.apply(this, arguments);
+    console.log.apply(console, arguments);
   },
   
   warn: function(msg){
-    console.warn.apply(this, arguments);
+    console.warn.apply(console, arguments);
   },
   
   error: function(msg){
-    console.error.apply(this, arguments);
+    console.error.apply(console, arguments);
   },
   
   // log unique message (to split duplicated messages with different timestamps)
