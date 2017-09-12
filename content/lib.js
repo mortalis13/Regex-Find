@@ -248,10 +248,6 @@ function setSelection(results, window, highlightAll){
   
   clearSelection(window)
   
-  // var elementType = getElementType(results.startNode)
-  // if (elementType == 'textarea'){
-    
-  // if (results.tag && inputTags.indexOf(results.tag) != -1){
   if (isInput(startNode)){
     var input = startNode
     if(!isPlainInput(startNode))
@@ -302,12 +298,27 @@ function setSelection(results, window, highlightAll){
 }
 
 function clearSelection(window, clearUI){
+  // clear selection for all inputs
+  for (var i in inputTags){
+    inputTag = inputTags[i]
+    var inputs = window.document.getElementsByTagName(inputTag)
+    
+    if (inputs && inputs.length){
+      Array.forEach(inputs, function(item){
+        if (item instanceof Ci.nsIDOMNSEditableElement){
+          if(item.editor) {
+            var selectionController = item.editor.selectionController
+            var selection = selectionController.getSelection(selectionController.SELECTION_NORMAL)
+            selection.removeAllRanges()
+          }
+        }
+      })
+    }
+  }
+  
+  // unfocus active input element
   var activeElement = window.document.activeElement
   if (activeElement instanceof Ci.nsIDOMNSEditableElement){
-    var inputEditor = activeElement.editor
-    var selectionController = inputEditor.selectionController
-    var selection = selectionController.getSelection(selectionController.SELECTION_NORMAL)
-    selection.removeAllRanges()
     activeElement.blur()
   }
   
