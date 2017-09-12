@@ -1,7 +1,7 @@
 
 var separatorNodes = ['br','hr']
 var blockNodes = ['p','div','h1','h2','h3','h4','h5','h6', 'ol','ul','li','pre','address','blockquote','dl','fieldset','form','table','td','tr','th','article','aside','footer','header','hgroup','output','section','tfoot']
-var skipTags = ['script','button','bdi','bdo','input','select','img','noscript','audio','video','canvas','svg','iframe','frame','link','style']
+var skipTags = ['script','button','bdi','bdo','select','img','noscript','audio','video','canvas','svg','iframe','frame','link','style']
 var inputTags = ['textarea','input']
 
 var regexSymbols = ['\\','/','\^','\$','\*','\+','\?','(',')','{','}','[',']']
@@ -174,7 +174,7 @@ function getLastData(window, findAgain){                    //get lastNode/Offse
   var lastNode, lastOffset                                  //the selection may be formed after term find
   
   var activeElement = window.document.activeElement
-  if (activeElement instanceof Ci.nsIDOMNSEditableElement){
+  if (isEditableElement(activeElement)){
     lastNode = activeElement  // ___temp
     if (activeElement.childNodes.length){
       lastNode = activeElement.childNodes[0]
@@ -260,7 +260,7 @@ function setSelection(results, window, highlightAll){
     gFindBar._findField.focus()
 
     // custom selection controller of editable element
-    if (input instanceof Ci.nsIDOMNSEditableElement){
+    if (isEditableElement(input)){
       var inputEditor = input.editor
       selectionController = inputEditor.selectionController
     }
@@ -300,12 +300,11 @@ function setSelection(results, window, highlightAll){
 function clearSelection(window, clearUI){
   // clear selection for all inputs
   for (var i in inputTags){
-    inputTag = inputTags[i]
-    var inputs = window.document.getElementsByTagName(inputTag)
+    var inputs = window.document.getElementsByTagName(inputTags[i])
     
     if (inputs && inputs.length){
       Array.forEach(inputs, function(item){
-        if (item instanceof Ci.nsIDOMNSEditableElement){
+        if (isEditableElement(item)){
           if(item.editor) {
             var selectionController = item.editor.selectionController
             var selection = selectionController.getSelection(selectionController.SELECTION_NORMAL)
@@ -318,7 +317,7 @@ function clearSelection(window, clearUI){
   
   // unfocus active input element
   var activeElement = window.document.activeElement
-  if (activeElement instanceof Ci.nsIDOMNSEditableElement){
+  if (isEditableElement(activeElement)){
     activeElement.blur()
   }
   
@@ -427,6 +426,11 @@ function isPlainInput(node){
 function isInput(node){
   return node instanceof Ci.nsIDOMNSEditableElement || node.parentElement instanceof Ci.nsIDOMNSEditableElement;
 }
+
+function isEditableElement(element){
+  return element instanceof Ci.nsIDOMNSEditableElement;
+}
+
 
 /* **************************************** supplementary ********************************************* */
 
