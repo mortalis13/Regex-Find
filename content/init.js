@@ -1,22 +1,24 @@
 
-// const {classes: Cc, interfaces: Ci, utils: Cu}=Components;
+// const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
 Cu.import("resource://gre/modules/Services.jsm");
 
 var prefs = {'key_findRegexPrevState': 'extensions.regexfind.key_findRegexPrevState'};
-var prefObserver={
+var prefObserver = {
   observe: function(aSubject, aTopic, aData){
     updateKeysetPref();
   }
 };
 
-var tabsProgressListener={
+var tabsProgressListener = {
   onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation, aFlags){
     if(gFindBar){
       // clear list of lines/nodes when reloading page/changing url
       gFindBar.lines = [];
-      gFindBar._foundMatches.hidden=true
-      gFindBar._foundMatches.value=""
-      gFindBar._findStatusDesc.textContent=""
+      gFindBar._foundMatches.hidden = true
+      gFindBar._foundMatches.value = ""
+      gFindBar._findStatusDesc.textContent = ""
+      gFindBar.prevRegexValue = ""
+      gFindBar.globalResults = {total: 0}
     }
     else{
       console.log('gFindBar is empty');
@@ -27,7 +29,7 @@ var tabsProgressListener={
 function updateKeysetPref(){
   var key_findRegexPrevState = pref(prefs["key_findRegexPrevState"]);
   // console.log("key_findRegexPrevState: " + key_findRegexPrevState);
-  
+
   if(key_findRegexPrevState == "on"){
     addKeyset();
   }
@@ -41,7 +43,7 @@ function addKeyset(){
   if(keyset){
     keyset.setAttribute("id", "regexfindKeyset");
     var key = document.createElement("key");
-    
+
     if(key){
       key.setAttribute("id", "key_findRegexPrev");
       key.setAttribute("keycode", "VK_F2");
@@ -59,29 +61,29 @@ function removeKeyset(){
   }
 }
 
-function pref(name,value){                            //get/set prefs
-  if(value===undefined){
+function pref(name, value){                            //get/set prefs
+  if(value === undefined){
     switch(Services.prefs.getPrefType(name)){
-      case 0:return null
-      case 32:return Services.prefs.getCharPref(name)
-      case 64:return Services.prefs.getIntPref(name)
-      case 128:return Services.prefs.getBoolPref(name)
+      case 0: return null
+      case 32: return Services.prefs.getCharPref(name)
+      case 64: return Services.prefs.getIntPref(name)
+      case 128: return Services.prefs.getBoolPref(name)
     }
   }
-  if(value==="") Services.prefs.clearUserPref(name)
+  if(value === "") Services.prefs.clearUserPref(name)
   else{
     switch(typeof value){
-      case "boolean":Services.prefs.setBoolPref(name,value);return
-      case "number":Services.prefs.setIntPref(name,value);return
-      default:Services.prefs.setCharPref(name,value)
+      case "boolean": Services.prefs.setBoolPref(name, value);return
+      case "number": Services.prefs.setIntPref(name, value);return
+      default: Services.prefs.setCharPref(name, value)
     }
   }
 }
 
 function init(){
   updateKeysetPref();
-  Services.prefs.addObserver(prefs["key_findRegexPrevState"],prefObserver,false);
-  
+  Services.prefs.addObserver(prefs["key_findRegexPrevState"], prefObserver, false);
+
   gBrowser.addTabsProgressListener(tabsProgressListener);
 }
 
