@@ -1,60 +1,64 @@
 
-function findRegex(window, val, findAgain){                       //forward search
+function findRegex(window, val, findAgain) {                       //forward search
   var lastNodeReached = false, continueSearch = true, exitSearch = false
   var results, lastNode, lastOffset
   var total = 0, current = 0
 
   var rx = createRegex(val)
-  if(!rx) return false                                //if pattern is incorrect
+  if (!rx) return false                                //if pattern is incorrect
 
   var lines = gFindBar.lines
-  if(!lines.length){                                 //don't load the document structure again if the current 'lines' array may be used
+  if (!lines.length) {                                 //don't load the document structure again if the current 'lines' array may be used
     lines = getLines(window.document.body)                          //but if it's the first call load it
     gFindBar.lines = lines;
   }
 
   var data = getLastData(window, findAgain)                      //get last selection node and offset
-  if(data){
+  if (data) {
     lastNode = data.lastNode
     lastOffset = data.lastOffset
   }
 
-  for(var l in lines){                                //all lines
+  for (var l in lines) {                                //all lines
     var line = lines[l]
     var text = line.text
     var lastLine = false
 
     var res = rx.exec(text)
-    if(res && res[0] !== ""){
-      while(res && res[0] !== ""){                                  //search all for 'total'
+    if (res && res[0] !== "") {
+      while (res && res[0] !== "") {                                  //search all for 'total'
         total++
 
-        if(continueSearch){
+        if (continueSearch) {
           current++
           var idx = res.index
           var end = idx + res[0].length-1
           var nodes = line.nodes
-
-          if(lastNode && !lastNodeReached){                 //if the current line contains the last node (within line.nodes)
+          
+          // search for the last found selection (line)
+          if (lastNode && !lastNodeReached) {                 //if the current line contains the last node (within line.nodes)
             var lastLineOffset = checkLastNode(nodes, lastNode, lastOffset)
-            if(lastLineOffset !== false){
+            if (lastLineOffset !== false) {
               lastLine = true                       //this line is last (which has a selection)
               lastNodeReached = true
             }
           }
-
-          if(!lastNode || (lastLine && idx >= lastLineOffset)           //if there wasn't any selection (on the first page load or after reload)
-             || (!lastLine && lastNodeReached))                         // || this line contains the selection and found term is after this selection
-          {                                                             // || the line is after the lastLine (occurs if the lastLine doesn't already have any matches after previously found)
-            if(end >= getLeadingSpaces(text)){                          //prevent search invisible spaces and tabs (\t) at the beginning of the line
-              results = getResults(nodes, idx, end)                     //e.g. /./ without it will select but not show the spaces after the current line end reached
-              results.tag = line.tag
-
-              continueSearch = false                    //stop the search
-
-              if(findAgain){                            //break all cycles
-                exitSearch = true                       //('total' is known and 'current' is summed)
-                break                                   //but if !findAgain then continue searching for the 'total'
+          
+          // if there wasn't any selection (on the first page load or after reload)
+          // || this line contains the selection and found term is after this selection
+          // || the line is after the lastLine (occurs if the lastLine doesn't already have any matches after previously found)
+          var readyToGetResults = !lastNode || (lastLine && idx >= lastLineOffset) || (!lastLine && lastNodeReached);
+          
+          // get search results and stop
+          if (readyToGetResults) {
+            if (end >= getLeadingSpaces(text)) {                          //prevent search invisible spaces and tabs (\t) at the beginning of the line
+              results = getResults(nodes, idx, end)                      //e.g. /./ without it will select but not show the spaces after the current line end reached
+              results.innerDocument = line.innerDocument
+              
+              continueSearch = false                      //stop the search
+              if (findAgain) {                             //break all cycles
+                exitSearch = true                         //('total' is known and 'current' is summed)
+                break                                     //but if !findAgain then continue searching for the 'total'
               }
             }
           }
@@ -62,18 +66,18 @@ function findRegex(window, val, findAgain){                       //forward sear
         // continueSearch
 
         res = rx.exec(text)
-        if(res && res[0] === "") rx.lastIndex = 0
+        if (res && res[0] === "") rx.lastIndex = 0
       }
     }
 
-    if(exitSearch){
+    if (exitSearch) {
       total = gFindBar.globalResults.total                          //take the 'total' from the saved value
       break
     }
   }
 
-  if(continueSearch){                                 //if nothing was found after the previous match
-    if(!current) return false                           //nothing found in the whole document
+  if (continueSearch) {                                 //if nothing was found after the previous match
+    if (!current) return false                           //nothing found in the whole document
     gFindBar.regexEndReached = true
     clearSelection(window)
     return findRegex(window, val, findAgain)                    //find again from the start
@@ -89,37 +93,37 @@ function findRegex(window, val, findAgain){                       //forward sear
 }
 
 
-function findRegexPrev(window, val){                         //backward search
+function findRegexPrev(window, val) {                         //backward search
   var lastNodeReached = false, continueSearch = true
   var startNode, startOffset, endNode, endOffset, extremeOffset
   var results, lastNode, lastOffset
   var total = 0, current = 0
 
   var rx = createRegex(val)
-  if(!rx) return false
+  if (!rx) return false
 
   var data = getLastData(window, false)                        //the same as in findRegex()
-  if(data){
+  if (data) {
     lastNode = data.lastNode
     lastOffset = data.lastOffset
   }
 
   var lines = gFindBar.lines
-  for(var l = lines.length-1; l >= 0 && continueSearch; l--){               //search from the end...
+  for (var l = lines.length-1; l >= 0 && continueSearch; l--) {               //search from the end...
     var line = lines[l]
     var text = line.text
     var lastLine = false
 
     var res = rx.exec(text)
-    if(res && res[0] !== ""){
-      while(res && res[0] !== "" && continueSearch){
-        if(continueSearch){
+    if (res && res[0] !== "") {
+      while (res && res[0] !== "" && continueSearch) {
+        if (continueSearch) {
           current++
 
           var nodes = line.nodes
-          if(lastNode && !lastNodeReached){
+          if (lastNode && !lastNodeReached) {
             var lastLineOffset = checkLastNode(nodes, lastNode, lastOffset)
-            if(lastLineOffset !== false){
+            if (lastLineOffset !== false) {
               lastLine = true                             //...until the current selection
               lastNodeReached = true
             }
@@ -127,24 +131,24 @@ function findRegexPrev(window, val){                         //backward search
           extremeOffset = lastLineOffset
 
           var result
-          if(lastLine)                                        //check the last term in the line (with the offset limitation)
+          if (lastLine)                                        //check the last term in the line (with the offset limitation)
             result = searchLast(rx, text, extremeOffset)            //if we're on the lastLine => see lastLine in the findRegex()
-          else if(!lastNode || (!lastLine && lastNodeReached))
+          else if (!lastNode || (!lastLine && lastNodeReached))
             result = searchLast(rx, text, false)                      //if we passed the lastLine search just the last term (without limits)
 
-          if(result){
+          if (result) {
             var idx = result.index
             var end = idx+result.length-1
 
-            if(end >= getLeadingSpaces(text)){
+            if (end >= getLeadingSpaces(text)) {
               results = getResults(nodes, idx, end)             //get selection bounds
               results.tag = line.tag
               continueSearch = false                    //stop further search (use 'total' from the previous case)
 
-              if(lastLine){
+              if (lastLine) {
                 res = rx.exec(text)                   //but finish searching the current line (for the current 'current' value)
-                while(res){
-                  if(res.index >= extremeOffset)
+                while (res) {
+                  if (res.index >= extremeOffset)
                     current++
                   res = rx.exec(text)
                 }
@@ -154,13 +158,13 @@ function findRegexPrev(window, val){                         //backward search
         }
 
         res = rx.exec(text)
-        if(res && res[0] === "") rx.lastIndex = 0
+        if (res && res[0] === "") rx.lastIndex = 0
       }
     }
   }
 
-  if(continueSearch){                               //the same
-    if(!current) return false
+  if (continueSearch) {                               //the same
+    if (!current) return false
     gFindBar.regexStartReached = true
     window.getSelection().removeAllRanges()
     return findRegexPrev(window, val)                      //search again from the end
@@ -178,26 +182,26 @@ function findRegexPrev(window, val){                         //backward search
 }
 
 
-function findRegexAll(window, val, findAgain){                    //search all
+function findRegexAll(window, val, findAgain) {                    //search all
   var foundValues = []
 
   val = normalizePattern(val)
-  if(val === false) return false
+  if (val === false) return false
 
   var lines = gFindBar.lines
-  if(!lines.length)                               //if the checkbox is checked but the 'lines' is empty
+  if (!lines.length)                               //if the checkbox is checked but the 'lines' is empty
     gFindBar.lines = getLines(window.document.body)
 
   var rx = createRegex(val)
 
-  for(var l in lines){
+  for (var l in lines) {
     var line = lines[l]
     var text = line.text
     var nodes = line.nodes
 
     var res = rx.exec(text)
-    if(res && res[0] !== ""){
-      while(res){
+    if (res && res[0] !== "") {
+      while (res) {
         var idx = res.index
         var end = idx+res[0].length-1
         foundValues.push(getResults(nodes, idx, end))             //add new selection bounds
@@ -206,7 +210,7 @@ function findRegexAll(window, val, findAgain){                    //search all
     }
   }
 
-  if(!foundValues.length) return false
+  if (!foundValues.length) return false
 
   var results = {
     foundValues: foundValues,                          //the array containing all the nodes and offsets which will be selected
