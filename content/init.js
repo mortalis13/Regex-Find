@@ -4,47 +4,47 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 var prefs = {'key_findRegexPrevState': 'extensions.regexfind.key_findRegexPrevState'};
 var prefObserver = {
-  observe: function(aSubject, aTopic, aData){
+  observe: function(aSubject, aTopic, aData) {
     updateKeysetPref();
   }
 };
 
 var tabsProgressListener = {
-  onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation, aFlags){
-    if(gFindBar){
+  onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation, aFlags) {
+    if (gFindBar) {
       // clear list of lines/nodes when reloading page/changing url
       gFindBar.lines = [];
-      gFindBar._foundMatches.hidden = true
-      gFindBar._foundMatches.value = ""
-      gFindBar._findStatusDesc.textContent = ""
-      gFindBar.prevRegexValue = ""
-      gFindBar.globalResults = {total: 0}
+      gFindBar._foundMatches.hidden = true;
+      gFindBar._foundMatches.value = "";
+      gFindBar._findStatusDesc.textContent = "";
+      gFindBar.prevRegexValue = "";
+      gFindBar.globalResults = {total: 0};
     }
-    else{
+    else {
       console.log('gFindBar is empty');
     }
   }
 };
 
-function updateKeysetPref(){
+function updateKeysetPref() {
   var key_findRegexPrevState = pref(prefs["key_findRegexPrevState"]);
   // console.log("key_findRegexPrevState: " + key_findRegexPrevState);
 
-  if(key_findRegexPrevState == "on"){
+  if (key_findRegexPrevState == "on") {
     addKeyset();
   }
-  else if(key_findRegexPrevState == "off"){
+  else if (key_findRegexPrevState == "off") {
     removeKeyset();
   }
 }
 
-function addKeyset(){
+function addKeyset() {
   var keyset = document.createElement("keyset");
-  if(keyset){
+  if (keyset) {
     keyset.setAttribute("id", "regexfindKeyset");
     var key = document.createElement("key");
 
-    if(key){
+    if (key) {
       key.setAttribute("id", "key_findRegexPrev");
       key.setAttribute("keycode", "VK_F2");
       key.setAttribute("oncommand", "keyFindPrev()");
@@ -54,33 +54,35 @@ function addKeyset(){
   }
 }
 
-function removeKeyset(){
+function removeKeyset() {
   var keyset = document.getElementById("regexfindKeyset");
-  if(keyset){
+  if (keyset) {
     keyset.parentNode.removeChild(keyset);
   }
 }
 
-function pref(name, value){                            //get/set prefs
-  if(value === undefined){
-    switch(Services.prefs.getPrefType(name)){
-      case 0: return null
-      case 32: return Services.prefs.getCharPref(name)
-      case 64: return Services.prefs.getIntPref(name)
-      case 128: return Services.prefs.getBoolPref(name)
+// get/set prefs
+function pref(name, value) {
+  if (value === undefined) {
+    switch(Services.prefs.getPrefType(name)) {
+      case 0: return null;
+      case 32: return Services.prefs.getCharPref(name);
+      case 64: return Services.prefs.getIntPref(name);
+      case 128: return Services.prefs.getBoolPref(name);
     }
   }
-  if(value === "") Services.prefs.clearUserPref(name)
-  else{
-    switch(typeof value){
-      case "boolean": Services.prefs.setBoolPref(name, value);return
-      case "number": Services.prefs.setIntPref(name, value);return
-      default: Services.prefs.setCharPref(name, value)
+  if (value === "") Services.prefs.clearUserPref(name);
+  else {
+    switch(typeof value) {
+      case "boolean": Services.prefs.setBoolPref(name, value);return;
+      case "number": Services.prefs.setIntPref(name, value);return;
+      default: Services.prefs.setCharPref(name, value);
     }
   }
 }
 
-function init(){
+
+function init() {
   updateKeysetPref();
   Services.prefs.addObserver(prefs["key_findRegexPrevState"], prefObserver, false);
 
