@@ -14,16 +14,20 @@ function findRegex(window, val, findAgain, findPrevious) {
     gFindBar.lines = lines;
   }
 
-  var data = getLastData(window, findAgain);                              // get last selection node and offset
-  if (data) {
-    lastNode = data.lastNode;
-    lastOffset = data.lastOffset;
-  }
-
   for (var l in lines) {                                                  // all lines
     var line = lines[l];
     var text = line.text;
     var nodes = line.nodes;
+    var innerDocument = line.innerDocument;
+    
+    var document = window.document;
+    if (innerDocument) document = innerDocument;
+    
+    var data = getLastData(document, findAgain);                              // get last selection node and offset
+    if (data) {
+      lastNode = data.lastNode;
+      lastOffset = data.lastOffset;
+    }
     
     var res = rx.exec(text);
     while (res && res[0] !== "") {                                      // search all for 'total'
@@ -61,7 +65,7 @@ function findRegex(window, val, findAgain, findPrevious) {
             if(afterSelectionOffLine && !prevResults) wrapBackSearch = true;
             
             prevResults = getResults(nodes, idx, end);
-            prevResults.innerDocument = line.innerDocument;                             // current document element of found node (may be an iframe's document)
+            prevResults.innerDocument = innerDocument;                             // current document element of found node (may be an iframe's document)
           }
           else if (prevResults && (afterSelectionOnLine || afterSelectionOffLine)) {
             results = prevResults;
@@ -83,7 +87,7 @@ function findRegex(window, val, findAgain, findPrevious) {
           // get search results and stop
           if (readyToGetResults && endInVisibleArea) {
             results = getResults(nodes, idx, end);                        // e.g. /./ without it will select but not show the spaces after the current line end reached
-            results.innerDocument = line.innerDocument;
+            results.innerDocument = innerDocument;
             
             // stop the search
             // break all cycles ('total' is known and 'current' is summed) but if !findAgain then continue searching for the 'total'

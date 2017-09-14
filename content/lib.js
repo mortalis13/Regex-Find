@@ -173,10 +173,10 @@ function getResults(nodes, idx, end) {                                    // get
 }
 
 
-function getLastData(window, findAgain) {                                 // get lastNode/Offset of the current selection
+function getLastData(document, findAgain) {                                 // get lastNode/Offset of the current selection
   var lastNode, lastOffset;                                               // the selection may be formed after term find
   
-  var activeElement = window.document.activeElement;
+  var activeElement = document.activeElement;
   if (isEditableElement(activeElement)) {
     lastNode = activeElement;                 // ___temp
     if (activeElement.childNodes.length) {
@@ -189,7 +189,7 @@ function getLastData(window, findAgain) {                                 // get
     }
   }
   else {
-    var selection = window.getSelection();                                // or by selecting text in the document
+    var selection = document.getSelection();                                // or by selecting text in the document
                                                                           // or by clicking with mouse in the document
     if (!selection.rangeCount) return false;
 
