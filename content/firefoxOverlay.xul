@@ -1,8 +1,9 @@
 <?xml-stylesheet href="chrome://regexfind/skin/style.css" type="text/css"?>
 
 <overlay id="regex-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-	<script src="chrome://regexfind/content/lib.js"/>
-	<script src="chrome://regexfind/content/main.js"/>
+  <script src="chrome://regexfind/content/utils.js"/>
+  <script src="chrome://regexfind/content/lib.js"/>
+  <script src="chrome://regexfind/content/main.js"/>
   <script src="chrome://regexfind/content/init.js"/>
   <script src="chrome://regexfind/content/prefs.js"/>
   

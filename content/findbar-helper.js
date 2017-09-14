@@ -9,7 +9,7 @@ function _find_port(aValue) {
       if (val == this.prevRegexValue) findAgain = true;                   // if the search field isn't changed find again
       this.prevRegexValue = val;
 
-      try{
+      try {
         if (this.regexHighlight && !findAgain) {                          // if the highlight all is checked and the search field is changed
           this.toggleHighlight(true);                                     // then continue highlighting all
         }
@@ -20,14 +20,19 @@ function _find_port(aValue) {
             this.getElement("highlight").removeAttribute("checked");
           }
 
-          var results;
-          if (!this.regexFindPrevious) {
-            results = findRegex(window, val, findAgain);
-          }
-          else {
+          var results = findRegex(window, val, findAgain, this.regexFindPrevious);
+          if (this.regexFindPrevious) {
             this.regexFindPrevious = false;
-            results = findRegexPrev(window, val);
           }
+          
+          // var results;
+          // if (!this.regexFindPrevious) {
+          //   results = findRegex(window, val, findAgain);
+          // }
+          // else {
+          //   this.regexFindPrevious = false;
+          //   results = findRegexPrev(window, val);
+          // }
 
           if (results) {
             setSelection(results, window, false);

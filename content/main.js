@@ -1,8 +1,8 @@
 
 // forward search
-function findRegex(window, val, findAgain) {
-  var lastNodeReached = false, continueSearch = true, exitSearch = false;
-  var results, lastNode, lastOffset;
+function findRegex(window, val, findAgain, findPrevious) {
+  var lastSelectionReached = false, afterLastResultOnLine = false, lastLineReached = false, wrapBackSearch = false, continueSearch = true, exitSearch = false;
+  var results, lastNode, lastOffset, lastLineOffset, prevResults;
   var total = 0, current = 0;
 
   var rx = createRegex(val);
@@ -23,51 +23,82 @@ function findRegex(window, val, findAgain) {
   for (var l in lines) {                                                  // all lines
     var line = lines[l];
     var text = line.text;
-    var lastLine = false;
-
+    var nodes = line.nodes;
+    
     var res = rx.exec(text);
-    if (res && res[0] !== "") {
-      while (res && res[0] !== "") {                                      // search all for 'total'
-        total++;
+    while (res && res[0] !== "") {                                      // search all for 'total'
+      total++;
 
-        if (continueSearch) {
-          current++;
-          var idx = res.index;
-          var end = idx + res[0].length-1;
-          var nodes = line.nodes;
+      if (continueSearch) {
+        current++;
+        var idx = res.index;
+        var end = idx + res[0].length-1;
+        
+        // search for the last found selection (line)
+        // if the current line contains the last node (within line.nodes)
+        var onLastLine = isOnLastLine(nodes, lastNode);
+        if (onLastLine) {
+          lastLineOffset = getLastLineOffset(nodes, lastNode, lastOffset);      // offset for current selection
+          afterLastResultOnLine = (idx >= lastLineOffset);                            // start of found result is after selection on the selection line (for forward search)
+          lastSelectionReached = (end+1 >= lastLineOffset);                     // current found result is the same as the previous one or after it on the same line (for backward search)
+          lastLineReached = true;                                               // the same as lastSelectionReached but for the whole line instead of selection position
+        }
+        
+        var lastNodeLineIndex = getLastNodeLineIndex(lines, lastNode);
+        var afterSelectionLineItem = (lastNodeLineIndex !== false && l > lastNodeLineIndex);            // is current line index (lines[l]) after line index of the node of the previous result
+        
+        var beforeSelectionOffLine = (!onLastLine && !lastLineReached && !afterSelectionLineItem);        // is current found result before/after current selection line
+        var afterSelectionOffLine = (!onLastLine && (lastLineReached || afterSelectionLineItem));
+        
+        // search backwards/fowards
+        if (findPrevious) {
+          var beforeSelectionOnLine = (onLastLine && !lastSelectionReached);                              // is current found result before/after current selection on the selection line
+          var afterSelectionOnLine = (onLastLine && lastSelectionReached);
           
-          // search for the last found selection (line)
-          if (lastNode && !lastNodeReached) {                             // if the current line contains the last node (within line.nodes)
-            var lastLineOffset = checkLastNode(nodes, lastNode, lastOffset);
-            if (lastLineOffset !== false) {
-              lastLine = true;                                            // this line is last (which has a selection)
-              lastNodeReached = true;
-            }
+          // save previous result for backward search
+          // or get the saved result (else) and stop the search if reached current selection (current result selectionor a custom user selection/cursor position)
+          if (beforeSelectionOffLine || afterSelectionOffLine && !prevResults || wrapBackSearch || beforeSelectionOnLine) {
+            if(afterSelectionOffLine && !prevResults) wrapBackSearch = true;
+            
+            prevResults = getResults(nodes, idx, end);
+            prevResults.innerDocument = line.innerDocument;                             // current document element of found node (may be an iframe's document)
           }
-          
-          // if there wasn't any selection (on the first page load or after reload)
-          // || this line contains the selection and found term is after this selection
-          // || the line is after the lastLine (occurs if the lastLine doesn't already have any matches after previously found)
-          var readyToGetResults = !lastNode || (lastLine && idx >= lastLineOffset) || (!lastLine && lastNodeReached);
-          
-          // get search results and stop
-          if (readyToGetResults) {
-            if (end >= getLeadingSpaces(text)) {                          // prevent search invisible spaces and tabs (\t) at the beginning of the line
-              results = getResults(nodes, idx, end);                      // e.g. /./ without it will select but not show the spaces after the current line end reached
-              results.innerDocument = line.innerDocument;
-              
-              continueSearch = false;                                     // stop the search
-              if (findAgain) {                                            // break all cycles
-                exitSearch = true;                                        // ('total' is known and 'current' is summed)
-                break;                                                    // but if !findAgain then continue searching for the 'total'
-              }
-            }
+          else if (prevResults && (afterSelectionOnLine || afterSelectionOffLine)) {
+            results = prevResults;
+            current--;
+            continueSearch = false;
+            exitSearch = findAgain;
           }
         }
-        // continueSearch
+        else {
+          // if there wasn't any selection (on the first page load or after reload)
+          // || this line contains the selection and found term is after this selection
+          // || the line is after the Last Line (occurs if the Last Line doesn't already have matches)
+          // || current line index (lines[l]) is after the index of previous result (occurs when current selection/cursor is on a line without matches)
+          var readyToGetResults = !lastNode || afterLastResultOnLine || afterSelectionOffLine || afterSelectionLineItem;
+          
+          // prevent search invisible spaces and tabs (\t) at the beginning of the line
+          var endInVisibleArea = (end >= getLeadingSpacesLength(text));
+          
+          // get search results and stop
+          if (readyToGetResults && endInVisibleArea) {
+            results = getResults(nodes, idx, end);                        // e.g. /./ without it will select but not show the spaces after the current line end reached
+            results.innerDocument = line.innerDocument;
+            
+            // stop the search
+            // break all cycles ('total' is known and 'current' is summed) but if !findAgain then continue searching for the 'total'
+            continueSearch = false;
+            exitSearch = findAgain;
+          }
+        }
+        // !findPrevious
+      }
+      // continueSearch
 
-        res = rx.exec(text);
-        if (res && res[0] === "") rx.lastIndex = 0;
+      res = rx.exec(text);
+      if (res && res[0] === "") {
+        utils.log('end of _while_, res && res[0] === "" (check if it\'s needed)');
+        rx.lastIndex = 0;
       }
     }
 
@@ -78,107 +109,21 @@ function findRegex(window, val, findAgain) {
   }
 
   if (continueSearch) {                                                   // if nothing was found after the previous match
-    if (!current) return false;                                           // nothing found in the whole document
-    gFindBar.regexEndReached = true;
-    clearSelection(window);
-    return findRegex(window, val, findAgain);                             // find again from the start
+    if (findPrevious && prevResults) {
+      results = prevResults;
+    }
+    else {
+      if (!current) return false;                                           // nothing found in the whole document
+      gFindBar.regexEndReached = true;
+      clearSelection(window);
+      return findRegex(window, val, findAgain, findPrevious);                             // find again from the start
+    }
   }
 
   gFindBar.globalResults.total = total;
   results.uiData = {
     current: current,
     total: total
-  };
-
-  return results;
-}
-
-
-// backward search
-function findRegexPrev(window, val) {
-  var lastNodeReached = false, continueSearch = true;
-  var startNode, startOffset, endNode, endOffset, extremeOffset;
-  var results, lastNode, lastOffset;
-  var total = 0, current = 0;
-
-  var rx = createRegex(val);
-  if (!rx) return false;
-
-  var data = getLastData(window, false);                                  // the same as in findRegex()
-  if (data) {
-    lastNode = data.lastNode;
-    lastOffset = data.lastOffset;
-  }
-
-  var lines = gFindBar.lines;
-  for (var l = lines.length-1; l >= 0 && continueSearch; l--) {           // search from the end...
-    var line = lines[l];
-    var text = line.text;
-    var lastLine = false;
-
-    var res = rx.exec(text);
-    if (res && res[0] !== "") {
-      while (res && res[0] !== "" && continueSearch) {
-        if (continueSearch) {
-          current++;
-
-          var nodes = line.nodes;
-          if (lastNode && !lastNodeReached) {
-            var lastLineOffset = checkLastNode(nodes, lastNode, lastOffset);
-            if (lastLineOffset !== false) {
-              lastLine = true;                                            // ...until the current selection
-              lastNodeReached = true;
-            }
-          }
-          extremeOffset = lastLineOffset;
-
-          var result;
-          if (lastLine)                                                   // check the last term in the line (with the offset limitation)
-            result = searchLast(rx, text, extremeOffset);                 // if we're on the lastLine => see lastLine in the findRegex()
-          else if (!lastNode || (!lastLine && lastNodeReached))
-            result = searchLast(rx, text, false);                         // if we passed the lastLine search just the last term (without limits)
-
-          if (result) {
-            var idx = result.index;
-            var end = idx+result.length-1;
-
-            if (end >= getLeadingSpaces(text)) {
-              results = getResults(nodes, idx, end);                      // get selection bounds
-              results.tag = line.tag;
-              continueSearch = false;                                     // stop further search (use 'total' from the previous case)
-
-              if (lastLine) {
-                res = rx.exec(text);                                      // but finish searching the current line (for the current 'current' value)
-                while (res) {
-                  if (res.index >= extremeOffset)
-                    current++;
-                  res = rx.exec(text);
-                }
-              }
-            }
-          }
-        }
-
-        res = rx.exec(text);
-        if (res && res[0] === "") 
-          rx.lastIndex = 0;
-      }
-    }
-  }
-
-  if (continueSearch) {                                                   // the same
-    if (!current) return false;
-    gFindBar.regexStartReached = true;
-    window.getSelection().removeAllRanges();
-    return findRegexPrev(window, val);                                    // search again from the end
-  }
-
-  total = gFindBar.globalResults.total;
-  current = total-current+1;                                              // revert the 'current' (it was counted from the end)
-
-  results.uiData = {
-    total: total,
-    current: current
   };
 
   return results;

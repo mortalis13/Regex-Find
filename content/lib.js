@@ -205,7 +205,30 @@ function getLastData(window, findAgain) {                                 // get
 }
 
 
-function checkLastNode(nodes, lastNode, lastOffset) {                     // check if the current 'lines' array element contains the 'lastNode'
+function isOnLastLine(nodes, lastNode) {                     // check if the current 'lines' array element contains the 'lastNode'
+  if (!lastNode) return false;
+  
+  for (var i in nodes) {                                                  // searching within the nodes which form the current text
+    if (nodes[i].node == lastNode)
+      return true;
+  }
+  
+  return false;
+}
+
+function getLastNodeLineIndex(lines, lastNode) {
+  for (var l in lines) {
+    var line = lines[l];
+    for (var node of line.nodes) {
+      if (node.node == lastNode)
+        return l;
+    }
+  }
+  
+  return false;
+}
+
+function getLastLineOffset(nodes, lastNode, lastOffset) {                     // check if the current 'lines' array element contains the 'lastNode'
   var len = 0, lastLineOffset;                                            // (the node containing the end of a previous selection)
 
   for (var i in nodes) {                                                  // searching within the nodes which form the current text
@@ -214,7 +237,7 @@ function checkLastNode(nodes, lastNode, lastOffset) {                     // che
 
     if (nodes[i].node == lastNode) {
       lastLineOffset = len - nlen + lastOffset;                           // lastOffset - selection offset in the lastNode
-      return lastLineOffset;                                              // lastLineOffset - selection offset of the lastNode in the text searching in (lines[l].text)
+      return lastLineOffset;                                              // lastLineOffset - selection offset of the lastNode in the line text (lines[l].text) (which may consist of multiple nodes)
     }
   }
   
@@ -495,7 +518,7 @@ function resetHighlightAllColor() {
   setHighlightAllColor("#888");
 }
 
-function getLeadingSpaces(text) {
+function getLeadingSpacesLength(text) {
   var tmp = text.replace(/^\s+/m, "");                                    // invisible spaces and tabs count not to select them on find
-  return text.length-tmp.length;
+  return text.length - tmp.length;
 }
