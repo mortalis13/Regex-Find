@@ -199,7 +199,10 @@ function getLastData(document, findAgain) {                                 // g
         Array.forEach(inputs, function(item) {
           if (isEditableElement(item)) {
             if (item.editor) {
-              selection = item.editor.selection;
+              var selectionTemp = item.editor.selection;
+              if (selectionTemp.rangeCount) {
+                selection = selectionTemp;
+              }
             }
           }
         });
@@ -218,40 +221,6 @@ function getLastData(document, findAgain) {                                 // g
 
   return {lastNode: lastNode, lastOffset: lastOffset};
 }
-
-
-// function getLastData(document, findAgain) {                                 // get lastNode/Offset of the current selection
-//   var lastNode, lastOffset;                                               // the selection may be formed after term find
-  
-//   var selection = document.getSelection();                                // or by selecting text in the document
-//                                                                           // or by clicking with mouse in the document
-//   if (!selection.rangeCount) {
-//     for (var i in inputTags) {
-//       var inputs = document.getElementsByTagName(inputTags[i]);
-      
-//       if (inputs && inputs.length) {
-//         Array.forEach(inputs, function(item) {
-//           if (isEditableElement(item)) {
-//             if (item.editor) {
-//               selection = item.editor.selection;
-//             }
-//           }
-//         });
-//       }
-//     }
-    
-//     if (!selection.rangeCount) return false;
-//   }
-
-//   lastNode = selection.focusNode;                                       // search from the end of the selection
-//   lastOffset = selection.focusOffset;
-//   if (!findAgain) {                                                     // search from the start of the selection
-//     lastNode = selection.anchorNode;                                    // used if a term is types letter by letter
-//     lastOffset = selection.anchorOffset;                                // (a, b, c) for the "abc" string
-//   }
-
-//   return {lastNode: lastNode, lastOffset: lastOffset};
-// }
 
 
 function isOnLastLine(nodes, lastNode) {                     // check if the current 'lines' array element contains the 'lastNode'
