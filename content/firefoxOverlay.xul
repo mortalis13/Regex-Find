@@ -7,8 +7,8 @@
   <script src="chrome://regexfind/content/rx_init.js"/>
   <script src="chrome://regexfind/content/prefs.js"/>
   
-	<script src="chrome://regexfind/content/rxfindbar-native.js"/>
-  <script src="chrome://regexfind/content/rxfindbar-helper.js"/>
+	<script src="chrome://regexfind/content/rx_findbar-native.js"/>
+  <script src="chrome://regexfind/content/rx_findbar-helper.js"/>
 
 	<commandset id="mainCommandSet">
 		<command id="cmd_find" oncommand="toggleFindbar()" />
