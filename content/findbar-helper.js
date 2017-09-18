@@ -25,15 +25,6 @@ function _find_port(aValue) {
             this.regexFindPrevious = false;
           }
           
-          // var results;
-          // if (!this.regexFindPrevious) {
-          //   results = findRegex(window, val, findAgain);
-          // }
-          // else {
-          //   this.regexFindPrevious = false;
-          //   results = findRegexPrev(window, val);
-          // }
-
           if (results) {
             setSelection(results, window, false);
             updateUI(this.FOUND, results.uiData);                         // set status and matches count
@@ -85,12 +76,12 @@ function toggleHighlight_port(aHighlight, aFromPrefObserver) {
         findAgain = true;
       }
 
-      var results = findRegexAll(window, val, findAgain);
+      var results = findRegex(window, val, false, false, true);
       if (results) {
         setHighlightAllColor("#EA60B5");                                  // uses the 'disabled' text color and changes it via preferences service
-        var foundValues = results.foundValues;                            // in the about:config (couldn't find a way to change it in another way)
-        for (var r in foundValues) {                                      // add each result to the selection
-          setSelection(foundValues[r], window, true);
+        var allResults = results.allResults;                            // in the about:config (couldn't find a way to change it in another way)
+        for (var r in allResults) {                                      // add each result to the selection
+          setSelection(allResults[r], window, true);
         }
 
         updateUI(this.FOUND, results.uiData);

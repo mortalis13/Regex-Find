@@ -18,22 +18,18 @@ function getLines(node) {
   addLine();
   
   function sumText(node) {                                                // text lines are added to the array of the same name
+    var line = lines[lidx];
     var type = node.nodeType;
-    var childNodes = node.childNodes;
     
     var blockNode = false, separatorNode = false;
-    var plainInputNode = isPlainInput(node);
 
-    if (type == 3 || plainInputNode) {                                    // text node
+    if (type == 3) {                                    // text node
       var text = node.nodeValue;
-      if(plainInputNode)
-        text = node.getAttribute('value');
       text = text.replace(/\n/g, " ");                                    // use spaces instead of linefeeds
                                                                           // to search in nodes that occupy more than one line in the html code
       var tmp = text.replace(/\s+/g, "");
       if (!tmp.length) return;                                            // skip empty nodes
       
-      var line = lines[lidx];
       line.text += text;
       line.nodes.push({node: node, len: text.length})
       if (inInnerDocument) {
@@ -55,8 +51,13 @@ function getLines(node) {
       if (separatorNode || blockNode) addLine();                          // add line after a separator (br, hr) and before a block node (div)
       if (separatorNode) return;
       
-      for (var i = 0; i < childNodes.length; i++)
-        sumText(childNodes[i]);                                           // recurse
+      if (isEditableElement(node)){
+        line.editableParent = node;
+        node = utils.getInputAnonymousNode(node);
+      }
+      
+      for (var childNode of node.childNodes)
+        sumText(childNode);                                           // recurse
 
       if (blockNode) addLine();                                           // add line after a block node (</div>)
     }
@@ -137,7 +138,11 @@ function normalizePattern(val) {
 }
 
 
-function getResults(nodes, idx, end) {                                    // get start/end node/offset to return it then and include in the document selection
+function getResults(line, idx, end) {                                    // get start/end node/offset to return it then and include in the document selection
+  var nodes = line.nodes;
+  var innerDocument = line.innerDocument;
+  var editableParent = line.editableParent;
+  
   var len = 0;
   var startFound = false, endFound = false;
   var startNode, startOffset, endNode, endOffset;
@@ -166,7 +171,9 @@ function getResults(nodes, idx, end) {                                    // get
     startNode: startNode,
     startOffset: startOffset,
     endNode: endNode,
-    endOffset: endOffset
+    endOffset: endOffset,
+    innerDocument: innerDocument,
+    editableParent: editableParent
   };
 
   return results;
@@ -177,32 +184,74 @@ function getLastData(document, findAgain) {                                 // g
   var lastNode, lastOffset;                                               // the selection may be formed after term find
   
   var activeElement = document.activeElement;
-  if (isEditableElement(activeElement)) {
-    lastNode = activeElement;                 // ___temp
-    if (activeElement.childNodes.length) {
-      lastNode = activeElement.childNodes[0];
+  while (activeElement && isFrame(activeElement)){
+    document = activeElement.contentDocument;
+    activeElement = document.activeElement;
+  }
+  
+  var selection = document.getSelection();                                // or by selecting text in the document
+                                                                          // or by clicking with mouse in the document
+  if (!selection.rangeCount) {
+    for (var i in inputTags) {
+      var inputs = document.getElementsByTagName(inputTags[i]);
+      
+      if (inputs && inputs.length) {
+        Array.forEach(inputs, function(item) {
+          if (isEditableElement(item)) {
+            if (item.editor) {
+              selection = item.editor.selection;
+            }
+          }
+        });
+      }
     }
     
-    lastOffset = activeElement.selectionEnd;
-    if (!findAgain) {
-      lastOffset = activeElement.selectionStart;
-    }
-  }
-  else {
-    var selection = document.getSelection();                                // or by selecting text in the document
-                                                                          // or by clicking with mouse in the document
     if (!selection.rangeCount) return false;
+  }
 
-    lastNode = selection.focusNode;                                       // search from the end of the selection
-    lastOffset = selection.focusOffset;
-    if (!findAgain) {                                                     // search from the start of the selection
-      lastNode = selection.anchorNode;                                    // used if a term is types letter by letter
-      lastOffset = selection.anchorOffset;                                // (a, b, c) for the "abc" string
-    }
+  lastNode = selection.focusNode;                                       // search from the end of the selection
+  lastOffset = selection.focusOffset;
+  if (!findAgain) {                                                     // search from the start of the selection
+    lastNode = selection.anchorNode;                                    // used if a term is types letter by letter
+    lastOffset = selection.anchorOffset;                                // (a, b, c) for the "abc" string
   }
 
   return {lastNode: lastNode, lastOffset: lastOffset};
 }
+
+
+// function getLastData(document, findAgain) {                                 // get lastNode/Offset of the current selection
+//   var lastNode, lastOffset;                                               // the selection may be formed after term find
+  
+//   var selection = document.getSelection();                                // or by selecting text in the document
+//                                                                           // or by clicking with mouse in the document
+//   if (!selection.rangeCount) {
+//     for (var i in inputTags) {
+//       var inputs = document.getElementsByTagName(inputTags[i]);
+      
+//       if (inputs && inputs.length) {
+//         Array.forEach(inputs, function(item) {
+//           if (isEditableElement(item)) {
+//             if (item.editor) {
+//               selection = item.editor.selection;
+//             }
+//           }
+//         });
+//       }
+//     }
+    
+//     if (!selection.rangeCount) return false;
+//   }
+
+//   lastNode = selection.focusNode;                                       // search from the end of the selection
+//   lastOffset = selection.focusOffset;
+//   if (!findAgain) {                                                     // search from the start of the selection
+//     lastNode = selection.anchorNode;                                    // used if a term is types letter by letter
+//     lastOffset = selection.anchorOffset;                                // (a, b, c) for the "abc" string
+//   }
+
+//   return {lastNode: lastNode, lastOffset: lastOffset};
+// }
 
 
 function isOnLastLine(nodes, lastNode) {                     // check if the current 'lines' array element contains the 'lastNode'
@@ -245,94 +294,60 @@ function getLastLineOffset(nodes, lastNode, lastOffset) {                     //
 }
 
 
-function searchLast(rx, text, extremeOffset) {                            // for the findRegexPrev(), searches the last occurrence in a line
-  var rx = new RegExp(rx);
-  var index = -1, length = 0, extremeReached = false;
-
-  var found = rx.exec(text);
-
-  if (extremeOffset !== false) {                                          // if there is elimination by the current document selection
-    if (found && found.index >= extremeOffset) 
-      extremeReached = true;                                              // then search last term but before this limitation
-    while (found && found[0].length && !extremeReached) {
-      index = found.index;
-      length = found[0].length;
-      found = rx.exec(text);
-      if (found && found.index >= extremeOffset) 
-        extremeReached = true;
-    }
-  }
-  else {                                                                  // no limits (just search the last)
-    while (found && found[0].length) {
-      index = found.index;
-      length = found[0].length;
-      found = rx.exec(text);
-    }
-  }
-  
-  if (index == -1) return false;
-  return {index: index, length: length};
-}
-
 function setSelection(results, window, highlightAll) {
-  var selectionController;
+  var selectionController, selection;
+
   var startNode = results.startNode;
+  var startOffset = results.startOffset;
+  var endNode = results.endNode;
+  var endOffset = results.endOffset;
   
-  clearSelection(window);
+  if (!highlightAll)
+    clearSelection(window);
   
   var document = window.document;
   if (results.innerDocument) {
     document = results.innerDocument;
   }
   
-  if (isInput(startNode)) {
-    var input = startNode;
-    if(!isPlainInput(startNode))
-      input = startNode.parentElement;
+  var editableParent = results.editableParent;
+  if (editableParent) {
+    var input = editableParent;
     
-    input.focus();
-    input.selectionStart = results.startOffset;
-    input.selectionEnd = results.endOffset;
-
-    gFindBar._findField.focus();
-
     // custom selection controller of editable element
-    if (isEditableElement(input)) {
-      var inputEditor = input.editor;
+    var inputEditor = input.editor;
+    if (inputEditor) {
+      selection = inputEditor.selection;
       selectionController = inputEditor.selectionController;
     }
   }
   else {
-    var startNode = results.startNode;
-    var startOffset = results.startOffset;
-    var endNode = results.endNode;
-    var endOffset = results.endOffset;
-
-    var selection = document.getSelection();
-    var range = document.createRange();
-    range.setStart(startNode, startOffset);
-    range.setEnd(endNode, endOffset);
-    if (!highlightAll) selection.removeAllRanges()
-    selection.addRange(range);
-
+    selection = document.getSelection();
+    
     var docShell = gBrowser.contentWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation).QueryInterface(Ci.nsIDocShell);
     selectionController = docShell.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsISelectionDisplay).QueryInterface(Ci.nsISelectionController);
   }
+  
+  var range = document.createRange();
+  range.setStart(startNode, startOffset);
+  range.setEnd(endNode, endOffset);
+  selection.addRange(range);
 
   if (selectionController) {
     // set color
     var selectionType = highlightAll ? selectionController.SELECTION_DISABLED: selectionController.SELECTION_ATTENTION;
     selectionController.setDisplaySelection(selectionType);
 
-    // scroll
-    var scrollSelectionType = selectionController.SELECTION_NORMAL;
-    var scrollRegion = selectionController.SELECTION_WHOLE_SELECTION;
-    var scrollType = selectionController.SCROLL_CENTER_VERTICALLY;
-
-    if (!highlightAll)
+    if (!highlightAll) {
+      // scroll
+      var scrollSelectionType = selectionController.SELECTION_NORMAL;
+      var scrollRegion = selectionController.SELECTION_WHOLE_SELECTION;
+      var scrollType = selectionController.SCROLL_CENTER_VERTICALLY;
       selectionController.scrollSelectionIntoView(scrollSelectionType, scrollRegion, scrollType);
+    }
   }
 }
+
 
 function clearSelection(window, clearUI) {
   // clear selection for all inputs
@@ -342,7 +357,7 @@ function clearSelection(window, clearUI) {
     if (inputs && inputs.length) {
       Array.forEach(inputs, function(item) {
         if (isEditableElement(item)) {
-          if(item.editor) {
+          if (item.editor) {
             var selectionController = item.editor.selectionController;
             var selection = selectionController.getSelection(selectionController.SELECTION_NORMAL);
             selection.removeAllRanges();
@@ -378,6 +393,7 @@ function clearSelection(window, clearUI) {
     gFindBar._findStatusDesc.textContent = "";
   }
 }
+
 
 function updateUI(status, uiData) {                                       // set found status, matches count, start/end reached,
   switch(status) {                                                        // regex exception information
