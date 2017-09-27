@@ -189,28 +189,60 @@ function getLastData(document, findAgain) {                                 // g
     activeElement = document.activeElement;
   }
   
-  var selection = document.getSelection();                                // or by selecting text in the document
-                                                                          // or by clicking with mouse in the document
-  if (!selection.rangeCount) {
-    for (var i in inputTags) {
-      var inputs = document.getElementsByTagName(inputTags[i]);
-      
-      if (inputs && inputs.length) {
-        Array.forEach(inputs, function(item) {
-          if (isEditableElement(item)) {
-            if (item.editor) {
-              var selectionTemp = item.editor.selection;
+  if (isEditableElement(activeElement)) {
+    var selectionTemp = activeElement.editor.selection;
+    if (selectionTemp.rangeCount) {
+      selection = selectionTemp;
+    }
+  }
+  else {
+    var selection = document.getSelection();                                // or by selecting text in the document
+                                                                            // or by clicking with mouse in the document
+    if (!selection.rangeCount) {
+      var stopLoop = false;
+      for (var i in inputTags) {
+        var inputs = document.getElementsByTagName(inputTags[i]);
+        
+        if (inputs && inputs.length) {
+          for (var input of inputs) {
+            if (isEditableElement(input) && input.editor) {
+              var selectionTemp = input.editor.selection;
               if (selectionTemp.rangeCount) {
                 selection = selectionTemp;
+                stopLoop = true;
+                break;
               }
             }
           }
-        });
+        }
+        
+        if (stopLoop) break;
       }
+      
+      stopLoop = false;
+      for (var i in frameTags) {
+        var frames = document.getElementsByTagName(frameTags[i]);
+        
+        if (frames && frames.length) {
+          for (var frame of frames) {
+            var frameDocument = frame.contentDocument;
+            var selectionTemp = frameDocument.getSelection();
+            if (selectionTemp.rangeCount) {
+              selection = selectionTemp;
+              stopLoop = true;
+              break;
+            }
+          }
+        }
+        
+        if (stopLoop) break;
+      }
+      
+      if (!selection.rangeCount) return false;
     }
     
-    if (!selection.rangeCount) return false;
   }
+  // if (isEditableElement(activeElement))
 
   lastNode = selection.focusNode;                                       // search from the end of the selection
   lastOffset = selection.focusOffset;
@@ -336,10 +368,11 @@ function clearSelection(window, clearUI) {
     }
   }
   
-  // unfocus active input element
+  // unfocus active [input]? element
   var activeElement = window.document.activeElement;
+  activeElement.blur();
   if (isEditableElement(activeElement)) {
-    activeElement.blur();
+    // activeElement.blur();
   }
   
   window.getSelection().removeAllRanges();
