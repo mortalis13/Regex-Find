@@ -54,7 +54,6 @@
     <implementation implements="nsIMessageListener, nsIEditActionListener">
       <field name="regexSearch">false</field>
       <field name="prevRegexValue">null</field>
-      <field name="prevLastIndex">0</field>
       <field name="regexFindPrevious">false</field>
 
       <field name="lines">null</field>

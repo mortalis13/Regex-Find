@@ -1,6 +1,6 @@
-content		regexfind 		content/
-locale		regexfind		en-US			locale/en-US/
-skin		regexfind		classic/1.0		skin/
+content   regexfind   content/
+locale    regexfind   en-US         locale/en-US/
+skin      regexfind   classic/1.0   skin/
 
-overlay		chrome://browser/content/browser.xul			chrome://regexfind/content/firefoxOverlay.xul
-style		chrome://global/content/customizeToolbar.xul	chrome://regexfind/skin/style.css
+overlay   chrome://browser/content/browser.xul          chrome://regexfind/content/firefoxOverlay.xul
+style     chrome://global/content/customizeToolbar.xul  chrome://regexfind/skin/style.css

@@ -13,10 +13,11 @@ var tabsProgressListener = {
   onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation, aFlags) {
     if (gFindBar) {
       // clear list of lines/nodes when reloading page/changing url
-      gFindBar.lines = [];
       gFindBar._foundMatches.hidden = true;
       gFindBar._foundMatches.value = "";
       gFindBar._findStatusDesc.textContent = "";
+      
+      gFindBar.lines = [];
       gFindBar.prevRegexValue = "";
       gFindBar.globalResults = {total: 0};
     }
@@ -86,7 +87,18 @@ function init() {
   updateKeysetPref();
   Services.prefs.addObserver(prefs["key_findRegexPrevState"], prefObserver, false);
 
-  gBrowser.addTabsProgressListener(tabsProgressListener);
+  if (gBrowser.addTabsProgressListener) {
+    try {
+      gBrowser.addTabsProgressListener(tabsProgressListener);
+    }
+    catch(e) {
+      console.error(e);
+      console.log('gBrowser.addTabsProgressListener', gBrowser.addTabsProgressListener);
+    }
+  }
+  else {
+    console.log('no gBrowser.addTabsProgressListener');
+  }
 }
 
 init();

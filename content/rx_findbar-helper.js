@@ -65,16 +65,14 @@ function onFindAgainCommand_port(aFindPrevious) {
 function toggleHighlight_port(aHighlight, aFromPrefObserver) {
   this.regexHighlight = aHighlight;
   if (this.regexSearch) {
-    var window = this.browser.contentWindow;
-    clearSelection(window, true);
-
     var val = this._findField.value;
+    var window = this.browser.contentWindow;
+    
+    clearSelection(window, true);
 
     if (aHighlight && val) {
       var findAgain = false;
-      if (val == this.prevRegexValue) {
-        findAgain = true;
-      }
+      if (val == this.prevRegexValue) findAgain = true;
 
       var results = findRegex(window, val, false, false, true);
       if (results) {
@@ -133,8 +131,8 @@ function toggleEntireWord_port(aEntireWord, aFromPrefObserver) {
 function _setRegexFind_port(aRegex) {
   this.lines = [];
   this.globalResults = {total: 0};
-
   this.regexSearch = aRegex;
+  
   if (!aRegex) {                                                          // reset the regex searching
     clearSelection(this.browser.contentWindow, true);
     this.prevRegexValue = "";

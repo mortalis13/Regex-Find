@@ -19,11 +19,9 @@ function getLines(node) {
   
   function sumText(node) {                                                // text lines are added to the array of the same name
     var line = lines[lidx];
-    var type = node.nodeType;
-    
     var blockNode = false, separatorNode = false;
 
-    if (type == 3) {                                    // text node
+    if (node.nodeType == Node.TEXT_NODE) {                                    // text node
       var text = node.nodeValue;
       text = text.replace(/\n/g, " ");                                    // use spaces instead of linefeeds
                                                                           // to search in nodes that occupy more than one line in the html code
@@ -51,7 +49,7 @@ function getLines(node) {
       if (separatorNode || blockNode) addLine();                          // add line after a separator (br, hr) and before a block node (div)
       if (separatorNode) return;
       
-      if (isEditableElement(node)){
+      if (isEditableElement(node)) {
         line.editableParent = node;
         node = utils.getInputAnonymousNode(node);
       }
@@ -83,6 +81,7 @@ function createRegex(val) {
   if (!gFindBar.regexCaseSensitive) flags += "i";
   if (gFindBar.regexEntireWord)
     val = "\\b"+val+"\\b";
+  
   return new RegExp(val, flags);
 }
 
@@ -93,10 +92,12 @@ function normalizePattern(val) {
   var rx = new RegExp("\\^", "g");
   var res = rx.exec(val);
   var tmp = val;
+
   while (res) {
     var idx = res.index;
-    if (idx == 0)
+    if (idx == 0) {
       tmp = val.replace(/\^/, "^\\s*");                                   // process the ^ to add spaces (generally pages contain spaces and tabs before each line)
+    }
     else {
       var prevChar = val[idx-1];
       if (prevChar != "\\" && prevChar != "[") return false;
@@ -119,6 +120,7 @@ function normalizePattern(val) {
         var s = s.substr(0, s.length - 1);
         bslashCount = s.length;
       }
+      
       if (!(bslashCount%2))
         tmp = val.substring(0, val.length - 1) + "\\s*$";                 // if there is an odd number of '\' before the end then the $ symbols is a control symbol
     }                                                                     // else it's a '$' text symbol
@@ -324,7 +326,6 @@ function setSelection(results, window, highlightAll) {
   }
   else {
     selection = document.getSelection();
-    
     var docShell = gBrowser.contentWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation).QueryInterface(Ci.nsIDocShell);
     selectionController = docShell.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsISelectionDisplay).QueryInterface(Ci.nsISelectionController);
   }
@@ -351,9 +352,11 @@ function setSelection(results, window, highlightAll) {
 
 
 function clearSelection(window, clearUI) {
+  var document = window.document;
+  
   // clear selection for all inputs
   for (var i in inputTags) {
-    var inputs = window.document.getElementsByTagName(inputTags[i]);
+    var inputs = document.getElementsByTagName(inputTags[i]);
     
     if (inputs && inputs.length) {
       Array.forEach(inputs, function(item) {
@@ -369,16 +372,14 @@ function clearSelection(window, clearUI) {
   }
   
   // unfocus active [input]? element
-  var activeElement = window.document.activeElement;
+  var activeElement = document.activeElement;
   activeElement.blur();
-  if (isEditableElement(activeElement)) {
-    // activeElement.blur();
-  }
   
   window.getSelection().removeAllRanges();
   
+  // clear selection for all frames
   for (var frameTag of frameTags) {
-    var frames = window.document.getElementsByTagName(frameTag);
+    var frames = document.getElementsByTagName(frameTag);
     
     if (frames && frames.length) {
       Array.forEach(frames, function(item) {
@@ -411,7 +412,6 @@ function updateUI(status, uiData) {                                       // set
 
         gFindBar._foundMatches.hidden = false;
         gFindBar._foundMatches.value = matches;
-
         gFindBar._findStatusDesc.textContent = "";
 
         // -- text for when start/end of search results is reached
@@ -422,12 +422,14 @@ function updateUI(status, uiData) {                                       // set
         gFindBar.regexStartReached = false;
       }
       break;
+      
     case gFindBar.NOT_FOUND:
       gFindBar._findField.setAttribute("status", "notfound");
       gFindBar._foundMatches.hidden = false;
       gFindBar._foundMatches.value = "Not found";
       gFindBar._findStatusDesc.textContent = "";
       break;
+      
     case gFindBar.EXCEPTION:
       gFindBar._findField.setAttribute("status", "notfound");
       gFindBar._foundMatches.hidden = false;
@@ -450,22 +452,14 @@ function getTag(node) {
 }
 
 function checkNode(node) {
-  if (node.nodeType == 8) return false;                                   // skip comments
+  if (node.nodeType == Node.COMMENT_NODE) return false;                                   // skip comments
   var tag = getTag(node);
-  if (tag) {                                                              // skip <script>, <style>, <img>, <canvas>...
-    for (var t of skipTags)
-      if (tag == t) return false;
-  }
-  return true;
+  return !skipTags.includes(tag);                                                         // skip <script>, <style>, <img>, <canvas>...
 }
 
 function isBlockNode(node) {                                              // <div>, <p>...
   var tag = getTag(node);
-  if (tag) {
-    for (var t of blockNodes)
-      if (tag == t) return true;
-  }
-  return false;
+  return blockNodes.includes(tag);
 }
 
 function isFrame(node) {
@@ -475,18 +469,12 @@ function isFrame(node) {
 
 function isSepartor(node) {                                               // <br>, <hr>
   var tag = getTag(node);
-  if (tag) {
-    for (var t of separatorNodes)
-      if (tag == t) return true;
-  }
-  return false;
+  return separatorNodes.includes(tag);
 }
 
 function isHidden(node) {
   var style = node.ownerDocument.defaultView.getComputedStyle(node);
-  if (style.display == "none") return true;
-  if (style.visibility == "hidden") return true;
-  if (style.opacity == "0") return true;
+  if (style.display == "none" || style.visibility == "hidden" || style.opacity == "0") return true;
   return false;
 }
 
@@ -503,17 +491,7 @@ function isEditableElement(element) {
 }
 
 
-/* **************************************** supplementary ********************************************* */
-
-function toggleFindbar() {
-  if (gFindBar.hidden || !gFindBar._findField.getAttribute("focused")) {
-    gFindBar.onFindCommand();
-    gFindBar.open();
-   }
-  else {
-    gFindBar.close();
-  }
-}
+/* **************************************** add ********************************************* */
 
 // F2 key command
 function keyFindPrev() {

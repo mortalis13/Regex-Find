@@ -37,9 +37,9 @@ var utils = {
     var inIDOMUtils = Cc["@mozilla.org/inspector/dom-utils;1"].getService(Ci.inIDOMUtils);
     var anonymousChildren = inIDOMUtils.getChildrenForNode(node, true);
     
-    for(var i in anonymousChildren){
+    for (var i in anonymousChildren) {
       var ch = anonymousChildren[i];
-      if (this.isElement(ch) && ch.classList.contains('anonymous-div')){
+      if (this.isElement(ch) && ch.classList.contains('anonymous-div')) {
         result = ch;
         break;
       }
