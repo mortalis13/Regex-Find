@@ -14,13 +14,9 @@ var findbarNative = {
 
     // Only search on input if we don't have a last-failed string,
     // or if the current search string doesn't start with it.
-    // In entire-word mode we always attemp a find; since sequential matching
-    // is not guaranteed, the first character typed may not be a word (no
-    // match), but the with the second character it may well be a word,
-    // thus a match.
     if (!this._findFailedString ||
-        !val.startsWith(this._findFailedString) ||
-        this._entireWord) {
+        !val.startsWith(this._findFailedString))
+    {
       // Getting here means the user commanded a find op. Make sure any
       // initial prefilling is ignored if it hasn't happened yet.
       if (this._startFindDeferred) {
@@ -29,8 +25,10 @@ var findbarNative = {
       }
 
       this._enableFindButtons(val);
+      if (this.getElement("highlight").checked)
+        this._setHighlightTimeout();
+
       this._updateCaseSensitivity(val);
-      this._setEntireWord();
 
       this.browser.finder.fastFind(val, this._findMode == this.FIND_LINKS,
                                    this._findMode != this.FIND_NORMAL);
@@ -68,40 +66,26 @@ var findbarNative = {
     this._findFailedString = null;
 
     // Ensure the stored SearchString is in sync with what we want to find
-    if (this._findField.value != this._browser.finder.searchString) {
+    if (this._findField.value != this._browser.finder.searchString)
       this._find(this._findField.value);
-    } else {
+    else
       this._findAgain(aFindPrevious);
-      if (this._useModalHighlight) {
-        this.open();
-        this._findField.focus();
-      }
-    }
 
     return undefined;
   },
 
 
   toggleHighlight: function(aHighlight, aFromPrefObserver){
-    if (aHighlight === this._highlightAll) {
+    if (!this._dispatchFindEvent("highlightallchange"))
       return;
-    }
-
-    this.browser.finder.onHighlightAllChange(aHighlight);
-
-    this._setHighlightAll(aHighlight, aFromPrefObserver);
-
-    if (!this._dispatchFindEvent("highlightallchange")) {
-      return;
-    }
 
     let word = this._findField.value;
     // Bug 429723. Don't attempt to highlight ""
     if (aHighlight && !word)
       return;
 
-    this.browser.finder.highlight(aHighlight, word,
-      this._findMode == this.FIND_LINKS);
+    this.browser._lastSearchHighlight = aHighlight;
+    this.browser.finder.highlight(aHighlight, word);
 
     // Update the matches count
     this._updateMatchesCount(this.nsITypeAheadFind.FIND_FOUND);
@@ -113,20 +97,10 @@ var findbarNative = {
     this._updateCaseSensitivity();
     this._findFailedString = null;
     this._find();
+    if (this.getElement("highlight").checked)
+      this._setHighlightTimeout();
 
     this._dispatchFindEvent("casesensitivitychange");
   },
-
-
-  toggleEntireWord: function(aEntireWord, aFromPrefObserver){
-    if (!aFromPrefObserver) {
-      // Just set the pref; our observer will change the find bar behavior.
-      this._prefsvc.setBoolPref("findbar.entireword", aEntireWord);
-      return;
-    }
-
-    this._findFailedString = null;
-    this._find();
-  }
 
 }
