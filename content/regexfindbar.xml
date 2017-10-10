@@ -21,35 +21,27 @@
     </resources>
 
     <content hidden="true">
-      <xul:hbox anonid="findbar-container" class="findbar-container" flex="1" align="center">
-        <xul:hbox anonid="findbar-textbox-wrapper" align="stretch">
-          <xul:textbox anonid="findbar-textbox" class="findbar-textbox findbar-find-fast" xbl:inherits="flash"/>
-          <xul:toolbarbutton anonid="find-previous" class="findbar-find-previous tabbable" tooltiptext="Find the previous occurrence of the phrase" oncommand="onFindAgainCommand(true);" disabled="true" xbl:inherits="accesskey=findpreviousaccesskey"/>
-          <xul:toolbarbutton anonid="find-next" class="findbar-find-next tabbable" tooltiptext="Find the next occurrence of the phrase" oncommand="onFindAgainCommand(false);" disabled="true" xbl:inherits="accesskey=findnextaccesskey"/>
-        </xul:hbox>
-
-        <xul:toolbarbutton anonid="highlight" class="findbar-highlight findbar-button tabbable" label="Highlight All" accesskey="l" tooltiptext="Highlight all occurrences of the phrase" oncommand="toggleHighlight(this.checked);" type="checkbox" xbl:inherits="accesskey=highlightaccesskey"/>
-        <xul:toolbarbutton anonid="find-case-sensitive" class="findbar-case-sensitive findbar-button tabbable" label="Match Case" accesskey="c" tooltiptext="Search with case sensitivity" oncommand="_setCaseSensitivity(this.checked ? 1 : 0);" type="checkbox" xbl:inherits="accesskey=matchcaseaccesskey"/>
-        <xul:toolbarbutton anonid="find-entire-word" class="findbar-entire-word findbar-button tabbable" label="Whole Words" accesskey="w" tooltiptext="Search whole words only" oncommand="toggleEntireWord(this.checked);" type="checkbox" xbl:inherits="accesskey=entirewordaccesskey"/>
-
-        <xul:toolbarbutton anonid="find-regex"
-                           class="findbar-regex findbar-button tabbable"
-                           label="&regexCheckbox.label;"
-                           accesskey="&regexCheckbox.accesskey;"
-                           type="checkbox"
-                           oncommand="_setRegexFind(this.checked)"/>
-
-        <xul:label anonid="match-case-status" class="findbar-find-fast"/>
-        <xul:label anonid="entire-word-status" class="findbar-find-fast"/>
-        <xul:label anonid="found-matches" class="findbar-find-fast found-matches" hidden="true"/>
-        <xul:image anonid="find-status-icon" class="findbar-find-fast find-status-icon"/>
-        <xul:description anonid="find-status" control="findbar-textbox" class="findbar-find-fast findbar-find-status">
-        <!-- Do not use value, first child is used because it provides a11y with text change events -->
-        </xul:description>
+    <xul:hbox anonid="findbar-container" class="findbar-container" flex="1" align="center">
+      <xul:hbox anonid="findbar-textbox-wrapper" align="stretch">
+        <xul:textbox anonid="findbar-textbox" class="findbar-textbox findbar-find-fast" xbl:inherits="flash"/>
+        <xul:toolbarbutton anonid="find-previous" class="findbar-find-previous tabbable" tooltiptext="Find the previous occurrence of the phrase" oncommand="onFindAgainCommand(true);" disabled="true" xbl:inherits="accesskey=findpreviousaccesskey"/>
+        <xul:toolbarbutton anonid="find-next" class="findbar-find-next tabbable" tooltiptext="Find the next occurrence of the phrase" oncommand="onFindAgainCommand(false);" disabled="true" xbl:inherits="accesskey=findnextaccesskey"/>
       </xul:hbox>
-
-      <xul:toolbarbutton anonid="find-closebutton" class="findbar-closebutton close-icon" tooltiptext="Close find bar" oncommand="close();"/>
+      <xul:toolbarbutton anonid="highlight" class="findbar-highlight findbar-button tabbable" label="Highlight All" accesskey="l" tooltiptext="Highlight all occurrences of the phrase" oncommand="toggleHighlight(this.checked);" type="checkbox" xbl:inherits="accesskey=highlightaccesskey"/>
+      <xul:toolbarbutton anonid="find-case-sensitive" class="findbar-case-sensitive findbar-button tabbable" label="Match Case" accesskey="c" tooltiptext="Search with case sensitivity" oncommand="_setCaseSensitivity(this.checked ? 1 : 0);" type="checkbox" xbl:inherits="accesskey=matchcaseaccesskey"/>
+      <xul:toolbarbutton anonid="find-entire-word" class="findbar-entire-word findbar-button tabbable" label="Whole Words" accesskey="w" tooltiptext="Search whole words only" oncommand="toggleEntireWord(this.checked);" type="checkbox" xbl:inherits="accesskey=entirewordaccesskey"/>
+      <xul:toolbarbutton anonid="find-regex" class="findbar-regex findbar-button tabbable" label="&regexCheckbox.label;" accesskey="&regexCheckbox.accesskey;" type="checkbox" oncommand="_setRegexFind(this.checked)"/>
+      <xul:label anonid="match-case-status" class="findbar-find-fast"/>
+      <xul:label anonid="entire-word-status" class="findbar-find-fast"/>
+      <xul:label anonid="found-matches" class="findbar-find-fast found-matches" hidden="true"/>
+      <xul:image anonid="find-status-icon" class="findbar-find-fast find-status-icon"/>
+      <xul:description anonid="find-status" control="findbar-textbox" class="findbar-find-fast findbar-find-status">
+      <!-- Do not use value, first child is used because it provides a11y with text change events -->
+      </xul:description>
+    </xul:hbox>
+    <xul:toolbarbutton anonid="find-closebutton" class="findbar-closebutton close-icon" tooltiptext="Close find bar" oncommand="close();"/>
     </content>
+    
 
     <implementation implements="nsIMessageListener, nsIEditActionListener">
       <field name="regexSearch">false</field>

@@ -28,6 +28,7 @@ var findbarNative = {
         this._startFindDeferred = null;
       }
 
+      this._enableFindButtons(val);
       this._updateCaseSensitivity(val);
       this._setEntireWord();
 
@@ -73,7 +74,6 @@ var findbarNative = {
       this._findAgain(aFindPrevious);
       if (this._useModalHighlight) {
         this.open();
-        this._findField.select();
         this._findField.focus();
       }
     }
