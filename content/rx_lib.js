@@ -229,7 +229,7 @@ function getLastData(document, findAgain) {                                 // g
           for (var frame of frames) {
             var frameDocument = frame.contentDocument;
             var selectionTemp = frameDocument.getSelection();
-            if (selectionTemp.rangeCount) {
+            if (selectionTemp && selectionTemp.rangeCount) {
               selection = selectionTemp;
               stopLoop = true;
               break;
@@ -384,7 +384,8 @@ function clearSelection(window, clearUI) {
     if (frames && frames.length) {
       Array.forEach(frames, function(item) {
         var frameDocument = item.contentDocument;
-        frameDocument.getSelection().removeAllRanges();
+        if (frameDocument.getSelection())
+          frameDocument.getSelection().removeAllRanges();
       });
     }
   }
@@ -435,6 +436,7 @@ function updateUI(status, uiData) {                                       // set
       gFindBar._foundMatches.hidden = false;
       gFindBar._foundMatches.value = "Not found";
       gFindBar._findStatusDesc.textContent = "["+uiData.message+"]";      // uiData here is an Error object (got from the catch(e) block)
+      utils.error(uiData);
       break;
   }
 
