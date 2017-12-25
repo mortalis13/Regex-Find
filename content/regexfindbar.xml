@@ -29,8 +29,10 @@
       </xul:hbox>
       <xul:toolbarbutton anonid="highlight" class="findbar-highlight findbar-button tabbable" label="Highlight All" accesskey="a" tooltiptext="Highlight all occurrences of the phrase" oncommand="toggleHighlight(this.checked);" type="checkbox" xbl:inherits="accesskey=highlightaccesskey"/>
       <xul:toolbarbutton anonid="find-case-sensitive" class="findbar-case-sensitive findbar-button tabbable" label="Match Case" accesskey="c" tooltiptext="Search with case sensitivity" oncommand="_setCaseSensitivity(this.checked ? 1 : 0);" type="checkbox" xbl:inherits="accesskey=matchcaseaccesskey"/>
+      <xul:toolbarbutton anonid="find-entire-word" class="findbar-entire-word findbar-button tabbable" label="Whole Words" accesskey="w" tooltiptext="Search whole words only" oncommand="_setEntireWord(this.checked);" type="checkbox" xbl:inherits="accesskey=entirewordaccesskey"/>
       <xul:toolbarbutton anonid="find-regex" class="findbar-regex findbar-button tabbable" label="&regexCheckbox.label;" accesskey="&regexCheckbox.accesskey;" type="checkbox" oncommand="_setRegexFind(this.checked)"/>
       <xul:label anonid="match-case-status" class="findbar-find-fast"/>
+      <xul:label anonid="entire-word-status" class="findbar-find-fast"/>
       <xul:label anonid="found-matches" class="findbar-find-fast found-matches" hidden="true"/>
       <xul:image anonid="find-status-icon" class="findbar-find-fast find-status-icon"/>
       <xul:description anonid="find-status" control="findbar-textbox" class="findbar-find-fast findbar-find-status">
