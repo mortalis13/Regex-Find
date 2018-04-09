@@ -1,7 +1,12 @@
 
-// forward search
 function findRegex(window, val, findAgain, findPrevious, findAll) {
-  var lastSelectionReached = false, afterLastResultOnLine = false, lastLineReached = false, wrapBackSearch = false, continueSearch = true, exitSearch = false;
+  var lastSelectionReached = false;
+  var afterLastResultOnLine = false;
+  var lastLineReached = false;
+  var wrapBackSearch = false;
+  var continueSearch = true;
+  var exitSearch = false;
+  
   var results, lastNode, lastOffset, lastLineOffset, prevResults;
   var allResults = [];
   var total = 0, current = 0;
@@ -23,8 +28,8 @@ function findRegex(window, val, findAgain, findPrevious, findAll) {
 
   for (var lid = 0; lid < lines.length; lid++) {                                                  // all lines
     var line = lines[lid];
-    var text = line.text;
     var nodes = line.nodes;
+    var text = getLineText(nodes);
     
     var res = rx.exec(text);
     while (res && res[0] !== "") {                                      // search all for 'total'
@@ -105,10 +110,10 @@ function findRegex(window, val, findAgain, findPrevious, findAll) {
       }
     }
 
-    if (exitSearch) {
-      total = gFindBar.globalResults.total;                               // take the 'total' from the saved value
-      break;
-    }
+    // if (exitSearch) {
+    //   total = gFindBar.globalResults.total;                               // take the 'total' from the saved value
+    //   break;
+    // }
   }
 
   if (findAll) {

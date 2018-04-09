@@ -28,8 +28,10 @@ function getLines(node) {
       var tmp = text.replace(/\s+/g, "");
       if (!tmp.length) return;                                            // skip empty nodes
       
-      line.text += text;
-      line.nodes.push({node: node, len: text.length})
+      // line.text += text;
+      // line.nodes.push({node: node, len: text.length})
+      
+      line.nodes.push(node)
       if (inInnerDocument) {
         line.innerDocument = node.ownerDocument;
       }
@@ -66,10 +68,27 @@ function getLines(node) {
     // remove empty lines (without nodes)
     if (lines[lidx] && !lines[lidx].nodes.length)
       lidx--;
-    lines[++lidx] = {text: "", nodes: []};
+    lines[++lidx] = {nodes: []};
   }
 
   return lines;
+}
+
+
+function getLineText(nodes) {
+  var result = "";
+  
+  for (var i in nodes) {
+    var node = nodes[i];
+    if (node && node.nodeValue) {
+      var text = node.nodeValue;
+      text = text.replace(/\n/g, " ");                                    // use spaces instead of linefeeds
+                                                                          // to search in nodes that occupy more than one line in the html code
+      result += text;
+    }
+  }
+  
+  return result;
 }
 
 
@@ -150,18 +169,18 @@ function getResults(line, idx, end) {                                    // get 
   var startNode, startOffset, endNode, endOffset;
 
   for (var n in nodes) {
-    var nlen = nodes[n].len;
+    var nlen = nodes[n].nodeValue.length;
     len += nlen;
 
     if (!startFound && idx < len) {
-      startNode = nodes[n].node;
+      startNode = nodes[n];
       startOffset = nlen - (len - idx);
       startFound = true;
     }
 
     if (!endFound && startFound) {
       if (end < len) {
-        endNode = nodes[n].node;
+        endNode = nodes[n];
         endOffset = nlen - (len - end) + 1;
         endFound = true;
         break;
@@ -244,7 +263,7 @@ function getLastData(document, findAgain) {                                 // g
     }
     
   }
-  // if (isEditableElement(activeElement))
+  // -- if (isEditableElement(activeElement))
 
   lastNode = selection.focusNode;                                       // search from the end of the selection
   lastOffset = selection.focusOffset;
@@ -261,7 +280,7 @@ function isOnLastLine(nodes, lastNode) {                     // check if the cur
   if (!lastNode) return false;
   
   for (var i in nodes) {                                                  // searching within the nodes which form the current text
-    if (nodes[i].node == lastNode)
+    if (nodes[i] == lastNode)
       return true;
   }
   
@@ -272,7 +291,7 @@ function getLastNodeLineIndex(lines, lastNode) {
   for (var l in lines) {
     var line = lines[l];
     for (var node of line.nodes) {
-      if (node.node == lastNode)
+      if (node == lastNode)
         return l;
     }
   }
@@ -284,10 +303,10 @@ function getLastLineOffset(nodes, lastNode, lastOffset) {                     //
   var len = 0, lastLineOffset;                                            // (the node containing the end of a previous selection)
 
   for (var i in nodes) {                                                  // searching within the nodes which form the current text
-    var nlen = nodes[i].len;
+    var nlen = nodes[i].nodeValue.length;
     len += nlen;
 
-    if (nodes[i].node == lastNode) {
+    if (nodes[i] == lastNode) {
       lastLineOffset = len - nlen + lastOffset;                           // lastOffset - selection offset in the lastNode
       return lastLineOffset;                                              // lastLineOffset - selection offset of the lastNode in the line text (lines[l].text) (which may consist of multiple nodes)
     }
@@ -305,8 +324,7 @@ function setSelection(results, window, highlightAll) {
   var endNode = results.endNode;
   var endOffset = results.endOffset;
   
-  if (!highlightAll)
-    clearSelection(window);
+  if (!highlightAll) clearSelection(window);
   
   var document = window.document;
   if (results.innerDocument) {
@@ -323,6 +341,8 @@ function setSelection(results, window, highlightAll) {
       selection = inputEditor.selection;
       selectionController = inputEditor.selectionController;
     }
+    
+    if (!highlightAll) input.focus();
   }
   else {
     selection = document.getSelection();
@@ -440,7 +460,7 @@ function updateUI(status, uiData) {                                       // set
       break;
   }
 
-  gFindBar._findField.focus();
+  // gFindBar._findField.focus();
 }
 
 
