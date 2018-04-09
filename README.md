@@ -6,13 +6,20 @@ The addon offers basic regex search functionality with these limitations:
 - by default doesn't search in dynamically loaded content
 - doesn't support lookbehind search because it's not implemented in Javascript
 
+**From v1.2.0 there is a new addon-browser versioning:**
+
+- **1.2.0-45** - corresponds to Firefox versions 45-49
+- **1.2.0-50** - Firefox 50-54
+- **1.2.0-55** - Firefox 55-56
+- **1.2.0-57** - Firefox Nighlty 57+
+
 Tips:
 
 1. To search dynamic content (AJAX added text, when hidden elements become visible) it's necessary to reload the regex search (uncheck/check) the Regex button, so the addon will rescan the page text with all its current content.
 2. In Firefox Nightly 57+ the search should be used in a non-multiprocess window in which the addon will have access to browser internal objects needed to perform the page text scanning and search. To open this type of window go to File - New Non-e10s Window. It's also possible to disable multiprocess behavior for the whole browser in the Options - Enable multi-process Nightly, the any pages will support the Regex search.
 3. F2 shortcut can be used for backward search.
 
-------------------------------------
+---
 
 ### Version 1.1.6:
 
@@ -28,6 +35,10 @@ Tips:
 ### Version 1.1.8:
 
 - support for versions 55-56
+
+### Version 1.2.0
+
+- single version for 4 browser versions: Firefox 45-49, 50-54, 55-56, Nightly 57+
 
 ---
 
