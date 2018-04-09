@@ -55,6 +55,7 @@ function onFindAgainCommand_port(aFindPrevious) {
   if (this.regexSearch) {
     this.regexFindPrevious = aFindPrevious;
     this._find(this._findField.value);                                    // redirect to the _find()
+    return undefined;
   }
   else {
     return findbarNative.onFindAgainCommand.call(this, aFindPrevious);
@@ -67,6 +68,7 @@ function toggleHighlight_port(aHighlight, aFromPrefObserver) {
   if (this.regexSearch) {
     var val = this._findField.value;
     var window = this.browser.contentWindow;
+    
     
     clearSelection(window, true);
 
@@ -88,6 +90,8 @@ function toggleHighlight_port(aHighlight, aFromPrefObserver) {
         clearSelection(window, true);
         updateUI(this.NOT_FOUND, false);
       }
+      
+      this._findField.focus();
     }
     else {
       resetHighlightAllColor();                                           // default gray 'disabled' text color
