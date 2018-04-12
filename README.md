@@ -38,7 +38,10 @@ Tips:
 
 ### Version 1.2.0
 
-- single version for 4 browser versions: Firefox 45-49, 50-54, 55-56, Nightly 57+
+- prevent force search field focus on findAgain
+- focus inputs when selecting found text
+- support for searching in dynamically changed inputs
+- single version for 4 browser version ranges: Firefox 45-49, 50-54, 55-56, Nightly 57+
 
 ---
 
