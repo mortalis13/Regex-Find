@@ -3,7 +3,7 @@
   <Description about="urn:mozilla:install-manifest">
     <em:id>regexfind@findbar.org</em:id>
     <em:name>Regex Find</em:name>
-    <em:version>1.2.0-50</em:version>
+    <em:version>1.2.1-50</em:version>
     <em:type>2</em:type>
     <!-- <em:multiprocessCompatible>true</em:multiprocessCompatible> -->
   
