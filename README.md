@@ -21,27 +21,27 @@ Tips:
 
 ---
 
-### Version 1.1.6:
-
-- search in input elements (input, textarea)
-- search in iframe elements
-- search in button elements
-- search after page reload
-
-### Version 1.1.7:
-
-- support for versions 45-49
-
-### Version 1.1.8:
-
-- support for versions 55-56
-
 ### Version 1.2.0
 
 - prevent force search field focus on findAgain
 - focus inputs when selecting found text
 - support for searching in dynamically changed inputs
 - single version for 4 browser version ranges: Firefox 45-49, 50-54, 55-56, Nightly 57+
+
+### Version 1.1.8:
+
+- support for versions 55-56
+
+### Version 1.1.7:
+
+- support for versions 45-49
+
+### Version 1.1.6:
+
+- search in input elements (input, textarea)
+- search in iframe elements
+- search in button elements
+- search after page reload
 
 ---
 
