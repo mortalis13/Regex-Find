@@ -6,9 +6,6 @@ The addon offers basic regex search functionality with these limitations:
 - by default doesn't search in dynamically loaded content
 - doesn't support lookbehind search because it's not implemented in Javascript
 
-If you'd like to make a donation via **PayPal** or with a **Credit Card**:  
-<a href="https://www.paypal.com/donate/?cmd=_s-xclick&hosted_button_id=4U6VKXLGU6LLU&source=url&locale.x=en_US"><img src="https://i.postimg.cc/2jXPm7TJ/btn-donate-2.png"></a>
-
 **From v1.2.0 there is a new addon-browser versioning:**
 
 - **1.2.0-45** - corresponds to Firefox versions 45-49
